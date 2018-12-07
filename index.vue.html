@@ -31,22 +31,25 @@
         <v-container>
           <h2>52시간 관리</h2>
           <v-form>
-            <v-layout row wrap>
+            <v-layout row wrap justify-space-between>
+                <v-flex xs6>
+                    <v-text-field prepend-icon="people" name="manager" label="소속" id="team"></v-text-field>
+                  </v-flex>
               <v-flex xs6>
-                <v-text-field name="name" label="이름" id="name"></v-text-field>
+                <v-text-field prepend-icon="person" name="name" label="이름" id="name"></v-text-field>
               </v-flex>
             </v-layout>
             <v-layout row wrap>
-              <v-flex xs12 lg6>
+              <v-flex xs6>
                 <v-menu ref="menu1" :close-on-content-click="false" v-model="menu1" :nudge-right="40" lazy transition="scale-transition"
                   offset-y full-width max-width="290px" min-width="290px">
                   <v-text-field slot="activator" v-model="dateFormatted" label="Date" hint="MM/DD/YYYY format"
                     persistent-hint prepend-icon="event" @blur="date = parseDate(dateFormatted)"></v-text-field>
                   <v-date-picker v-model="date" no-title @input="menu1 = false"></v-date-picker>
                 </v-menu>
-                <p>Date in ISO format: <strong>{{ date }}</strong></p>
+              
               </v-flex>
-              <v-flex xs12 lg6>
+              <v-flex xs6>
                 <v-menu ref="menu" :close-on-content-click="false" v-model="menu2" :nudge-right="40" :return-value.sync="time"
                   lazy transition="scale-transition" offset-y full-width max-width="290px" min-width="290px">
                   <v-text-field slot="activator" v-model="time" label="Picker in menu" prepend-icon="access_time"
@@ -54,6 +57,9 @@
                   <v-time-picker v-if="menu2" v-model="time" full-width @change="$refs.menu.save(time)"></v-time-picker>
                 </v-menu>
               </v-flex>
+            </v-layout>
+            <v-layout row wrap>
+              <P>퇴근 날짜 시간: {{ date }} {{ time }}</P>
             </v-layout>
           </v-form>
 
@@ -69,8 +75,9 @@
   <script>
     new Vue({
       el: '#app',
-      data: vm => ({
+      data: vm => ({ 
         date: new Date().toISOString().substr(0, 10),
+        time: new Date().toISOString().substr(11, 8),
         dateFormatted: vm.formatDate(new Date().toISOString().substr(0, 10)),
         menu1: false,
         menu2: false,
