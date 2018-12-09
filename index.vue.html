@@ -33,7 +33,11 @@
           <v-form>
             <v-layout row wrap justify-space-between>
                 <v-flex sm6 xs12 px-3>
-                    <v-text-field prepend-icon="people" name="manager" label="소속" id="team"></v-text-field>
+                    <v-text-field 
+                      v-validate="'required|max:10'"
+                      prepend-icon="people" name="manager" 
+                      label="소속" id="team"
+                      required></v-text-field>
                   </v-flex>
               <v-flex sm6 xs12 px-3>
                 <v-text-field prepend-icon="person" name="name" label="이름" id="name"></v-text-field>
@@ -59,9 +63,9 @@
             </v-layout>
             <v-layout row wrap my-3>
               <v-flex xs12>퇴근 날짜 시간</v-flex>
-              <v-flex xs12 sm8 pt-2 class="headline">{{resultDate}}</v-flex>
+              <v-flex xs12 sm8 pt-2 class="headline">{{resultDate.toLocaleString()}}</v-flex>
               <v-spacer></v-spacer>
-              <v-flex xs3e text-xs-right><v-btn color="primary">Primary</v-btn></v-flex>
+              <v-flex xs3e text-xs-right><v-btn color="primary">제 출</v-btn></v-flex>
             </v-layout>
           </v-form>
         </v-container>
@@ -78,11 +82,16 @@
       data: vm => ({
         uiReady: false,
         now: new Date(),
+        name: '',
+        manager: '',
         date: '',
         time: '',
         menu1: false,
         menu2: false, 
-        modal2: false
+        modal2: false,
+        teamKey: {
+          '정진영': '1FAIpQLSc8cUWGrPDHMD7X_JyxrhcqhqkPmALQOsdRR5MZuklvGpCkUA'
+        }
       }),
       mounted: function () {
         let month = this.now.getMonth()+1+''
@@ -93,11 +102,104 @@
         let min = this.now.getMinutes()+''
         this.time = `${hour.padStart(2,'0')}:${min.padStart(2,'0')}`
       },
-      computed: {
-        resultDate() {
-          return new Date(this.date+'T'+this.time).toLocaleString()
+      watch: {
+        name (newValue, oldValue) {
+          localStorage.name = newValue
+        },
+        manager (newValue) {
+          localStorage.manager = newValue
         }
       },
+      computed: {
+        teamResponseURL() {
+          return `https://docs.google.com/forms/d/e/${this.teamKey[this.manager]}/formResponse`
+        },
+        teamOriginalFormURL () {
+          return `https://docs.google.com/forms/d/e/${this.teamKey[this.manager]}/viewform`
+        },
+        resultDate() {
+          return new Date(this.date+'T'+this.time)
+        }
+      },
+      methods: {
+        submit () {
+          
+          if (!username) {
+            return alert('Name?');
+          } else {
+            Cookies.set('username', username, { expires: 365 });
+          }
+
+          var regularTime = new Date(new Date(date.getTime()).setHours(18,00,00));
+          var overtime = Math.floor((date - regularTime) / 1000 / 60 / 60)
+
+
+          if (!confirm(date.toLocaleString() + '\n초과:' + overtime + '시간' + ' 맞나요?')) {
+            return ;
+          }
+
+          // var ACTION_PATH = 'https://docs.google.com/forms/d/e/1FAIpQLScp5JzRN86jDgwsDW2xbbvNoiBS7kt8tBZTJW5MV-iykKd5Vg/formResponse' // 임시
+          var ACTION_PATH = 'https://docs.google.com/forms/d/e/1FAIpQLSc8cUWGrPDHMD7X_JyxrhcqhqkPmALQOsdRR5MZuklvGpCkUA/formResponse' //진짜
+
+          var f = document.createElement('form')
+          f.setAttribute('method', 'POST')
+          f.setAttribute('action', ACTION_PATH)
+          f.target = 'submitresult'
+          f.style = 'display:none;'
+
+          var param = {
+            'entry.1065843082_year': date.getFullYear(),
+            'entry.1065843082_month': date.getMonth()+1,
+            'entry.1065843082_day': date.getDate(),
+            'entry.1467693251': username,
+            'entry.2119704746_hour': 09,
+            'entry.2119704746_minute': 00,
+            'entry.680657899_hour': date.getHours(),
+            'entry.680657899_minute': date.getMinutes(),
+            'entry.1760268447_hour': overtime > 0 ? overtime : 0,
+            'entry.1760268447_minute': 00,
+            fvv: 1,
+            pageHistory: 0
+          }
+
+          /*** TEST FORM ***/
+          // var param = {
+          //   'entry.49582767_year': today.getFullYear(),
+          //   'entry.49582767_month': today.getMonth()+1,
+          //   'entry.49582767_day': today.getDate(),
+          //   'entry.2048335593': username,
+          //   'entry.1435532183_hour': 01,
+          //   'entry.1435532183_minute': 00,
+          //   fvv: 1,
+          //   pageHistory: 0
+          // }
+
+          for (var key in param) {
+            var el = document.createElement('input');
+            el.name = key;
+            el.value = param[key];
+            f.append(el);
+          }
+
+          document.body.append(f);
+
+          // last message
+          alert('Go Home !!');
+
+          // set history
+          var ymd = date.toISOString().replace(/T.*/,'')
+          Cookies.set('h', Cookies.get('h') + '|' + ymd, { expires: 365 });
+
+          //for testing
+          if (/surge.sh/.test(location.hostname)) {
+            f.submit();
+            document.getElementById('submitresult_area').style = 'display:block'
+          } else {
+            alert('form submitted')
+          }
+        }
+      },
+
     })
   </script>
 
