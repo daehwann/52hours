@@ -24,6 +24,7 @@ new Vue({
     // date & time
     now: new Date(),
     date: '',
+    today: '',
     startTime: '09:00',
     endTime: '',
     menu1: false, // for date picker
@@ -50,6 +51,7 @@ new Vue({
     let month = this.now.getMonth() + 1 + ''
     let day = this.now.getDate() + ''
     this.date = `${this.now.getFullYear()}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+    this.today = this.date
 
     let hour = this.now.getHours() + ''
     let min = this.now.getMinutes() + ''
