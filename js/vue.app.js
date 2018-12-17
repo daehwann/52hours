@@ -15,6 +15,9 @@ const managerList = [
 new Vue({
   el: '#app',
   data: vm => ({
+    // menu
+    drawer: false,
+
     // user
     username: '',
     manager: '',
@@ -38,11 +41,10 @@ new Vue({
     // dialogs
     confirmDialog: false,
     confirmed: false,
+    submitting: false,
     completeDialog: false,
     completed: false,
-
-    showResult: false,
-
+    
     // history
     // 'history' is yyyy-MM-dd formatted text array for history
     history: []
@@ -67,10 +69,9 @@ new Vue({
 
     let history = localStorage.history || Cookies.get('h') || ''
     this.history = history.split('|')
-      .filter(function(v) {return !!v && v!='undefined'})
-      .sort(function (a, b) {
-        return b.localeCompare(a)
-      })
+      .filter(v => !!v && v!='undefined')
+      .filter((v, i, a) => a.indexOf(v) === i)
+      .sort((a, b) => b.localeCompare(a))
   },
   watch: {
     username(newValue, oldValue) {
@@ -79,7 +80,10 @@ new Vue({
     manager(newValue) {
       localStorage.manager = newValue
 
-      this.managerName = managerList.filter(m => m.value == this.manager)[0].text
+      this.managerName = managerList
+        .filter(m => m.value == this.manager)
+        .map(m => m.text)
+        .pop()
     }
   },
   computed: {
@@ -87,6 +91,9 @@ new Vue({
       return `https://docs.google.com/forms/d/e/${this.manager}/formResponse`
     },
     teamOriginalFormURL() {
+      if (!this.manager) {
+        return "javascript:alert('소속을 선택하세요')"
+      }
       return `https://docs.google.com/forms/d/e/${this.manager}/viewform`
     },
     startDatetime () {
@@ -110,7 +117,10 @@ new Vue({
       return Math.floor( Math.abs(start - end) / 1000 / 60 / 60)
     },
     confirm () {
-      this.confirmDialog = true
+      this.confirmed = true
+      this.confirmDialog = false
+
+      this.submit()
     },
     submit() {
 
@@ -165,6 +175,17 @@ new Vue({
       // save history
       this.history.push(this.date)
       localStorage.history = this.history.join('|')
+
+      this.submitting = true;
+    },
+    complete () {
+      this.submitting = false;
+      this.completed = true;
+    },
+    closeComplete () {
+      document.getElementById('submitresult').src = ''
+      this.completed = false
+      this.completeDialog = false
     }
   }
 })

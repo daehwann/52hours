@@ -27,34 +27,59 @@
       display: none;
     }
     iframe {
+      border: 0em;
       width: 100%;
-      height: auto;
+      height: 100%;
     }
-
   </style>
 </head>
 
 <body>
   <div id="app" v-cloak>
     <v-app>
+      <v-navigation-drawer v-model="drawer" fixed left app width="200">
+        <v-list>
+          <v-list-tile @click="">
+            <v-list-tile-action>
+              <v-icon>home</v-icon>
+            </v-list-tile-action>
+            <v-list-tile-content>
+              <v-list-tile-title class="headline">Home</v-list-tile-title>
+            </v-list-tile-content>
+          </v-list-tile>
+          <v-list-tile @click="">
+            <v-list-tile-action>
+              <v-icon>contact_mail</v-icon>
+            </v-list-tile-action>
+            <v-list-tile-content>
+              <v-list-tile-title>Contact</v-list-tile-title>
+            </v-list-tile-content>
+          </v-list-tile>
+        </v-list>
+      </v-navigation-drawer>
+      <v-toolbar primary fixed app>
+        <!-- <v-toolbar-side-icon @click="drawer = !drawer"></v-toolbar-side-icon> -->
+        <v-toolbar-title>52 Hours</v-toolbar-title>
+        <v-spacer></v-spacer>
+  
+        <v-toolbar-items>
+          <v-btn flat :disabled="!manager" :href="teamOriginalFormURL" target="_blank">
+            {{ managerName }} 팀 기존 페이지로 가기
+            <v-icon>link{{ !managerName ? '_off' : ''}}</v-icon>
+          </v-btn>
+        </v-toolbar-items>
+      </v-toolbar>
       <v-content>
         <v-container>
-          <v-layout row wrap my-2 justify-space-between>
-            <v-flex xs6>
-              <h2>52 시간</h2>
-            </v-flex>
-            <v-flex xs6 text-xs-right>
-              <a :href="teamOriginalFormURL">{{ managerName }} 팀 기존 페이지로 가기</a>
-            </v-flex>
-          </v-layout>
+
 
           <div>
             <v-form>
               <v-layout row wrap justify-space-between>
                 <v-flex sm6 xs12 px-3>
                   <!-- Manager -->
-                  <v-select v-model="manager"  :dense="true" prepend-icon="people" name="manager" :rules="inputRules.manager" :items="teamList"
-                    label="소속" required></v-select>
+                  <v-select v-model="manager" dense prepend-icon="people" name="manager" :rules="inputRules.manager"
+                    :items="teamList" label="소속" required></v-select>
                 </v-flex>
                 <v-flex sm6 xs12 px-3>
                   <!-- Username -->
@@ -95,73 +120,96 @@
         </v-container>
 
         <v-divider></v-divider>
-        
+
         <!-- History -->
         <v-container grid-list-xs v-if="history.length > 0">
-            <h3>History</h3>
-            <v-layout row wrap my-3>
-              <div>
-                <v-chip v-for="d in history" :key="d.id">{{ d }}</v-chip>
-              </div>
-            </v-layout>
+          <h3>History</h3>
+          <v-layout row wrap my-3>
+            <div>
+              <v-chip v-for="d in history" :key="d.id">{{ d }}</v-chip>
+            </div>
+          </v-layout>
         </v-container>
       </v-content>
 
       <!-- Dialogs-->
-      <v-dialog v-model="confirmDialog" max-width="290">
-        <v-card>
-          <v-card-title class="title">제출 하시겠습니까?</v-card-title>
-          <v-card-text class="text-xs-center">
-            <p class="body-2">{{ date }}</p>
-            <p class="body-2">{{ startTime }} ~ {{ endTime }}</p>
-            <p class="body-2">근무시간: {{ workingtime }}</p>
-            <p class="body-2">초과시간: {{ overtime }}</p>
-          </v-card-text>
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn flat="flat" @click="confirmDialog = false">
-              CANCEL
-            </v-btn>
-            <v-btn color="primary" flat="flat" @click="confirmDialog = false; submit()">
-              OK
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-      <v-dialog v-model="completeDialog" max-width="500px">
+      <div>
+        <v-dialog v-model="confirmDialog" max-width="290">
           <v-card>
-            <v-card-title class="title">
-              <span>Go home 👏</span>
-            </v-card-title>
+            <v-card-title class="title">제출 하시겠습니까?</v-card-title>
             <v-card-text class="text-xs-center">
-                <iframe height="200px" id="submitresult" name="submitresult" scrolling="yes">
-                  <p>Please wait...</p>
-                </iframe>
+              <p class="body-2">{{ date }}</p>
+              <p class="body-2">{{ startTime }} ~ {{ endTime }}</p>
+              <p class="body-2">근무시간: {{ workingtime }}</p>
+              <p class="body-2">초과시간: {{ overtime }}</p>
             </v-card-text>
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn color="primary" flat @click="completeDialog=false">Close</v-btn>
+              <v-btn flat="flat" @click="confirmDialog = false">
+                CANCEL
+              </v-btn>
+              <v-btn color="primary" flat="flat" @click="confirm()">
+                OK
+              </v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
+        <v-dialog v-model="completeDialog"
+        fullscreen hide-overlay transition="dialog-bottom-transition">
+        <v-card>
+            <v-toolbar primary>
+              <v-progress-circular
+                v-show="submitting"
+                :width="4"
+                indeterminate
+                color="primary"
+              ></v-progress-circular>
+              <v-btn v-show="!submitting" icon @click="closeComplete()">
+                <v-icon>close</v-icon>
+              </v-btn>
+              <v-toolbar-title>{{ submitting ? '전송중...' : '제출 완료' }}</v-toolbar-title>
+              <v-spacer></v-spacer>
+              <v-toolbar-items>
+                <v-btn :disabled="submitting" flat @click="closeComplete()">Close</v-btn>
+              </v-toolbar-items>
+            </v-toolbar>
+            <!-- <v-card-title class="title">
+              <span>Go home 👏</span>
+            </v-card-title> -->
+            <iframe id="submitresult" name="submitresult" scrolling="yes" @load="complete()">
+              <p>Please wait...</p>
+            </iframe>
+            <v-card-text width="100%" px-0>
+              
+            </v-card-text>
+            <!-- <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="primary" flat @click="completeDialog=false">Close</v-btn>
+            </v-card-actions> -->
+          </v-card>
+        </v-dialog>
+      </div>
     </v-app>
   </div>
 
   <!-- Timepicker Component Template -->
-  <script type="text/x-template" id="working-time-template">
-    <v-menu ref="menu" :close-on-content-click="false" v-model="timemodal" :nudge-right="40" :return-value.sync="time"
-      lazy transition="scale-transition" offset-y full-width max-width="290px" min-width="290px"
-      @input="$emit('input', time)">
-      <v-text-field slot="activator" v-model="time" :label="labelName" prepend-icon="access_time" readonly></v-text-field>
-      <v-time-picker v-if="timemodal" v-model="time" full-width @change="$refs.menu.save(time)"></v-time-picker>
-    </v-menu>
-  </script>
+  <div class="d-template">
+    <script type="text/x-template" id="working-time-template">
+      <v-menu ref="menu" :close-on-content-click="false" v-model="timemodal" :nudge-right="40" :return-value.sync="time"
+        lazy transition="scale-transition" offset-y full-width max-width="290px" min-width="290px">
+        <v-text-field slot="activator" v-model="time" :label="labelName" prepend-icon="access_time" 
+          @input="$emit('input', time)" readonly></v-text-field>
+        <v-time-picker v-if="timemodal" v-model="time" full-width @change="$refs.menu.save(time)"></v-time-picker>
+      </v-menu>
+    </script>
+  </div>
 
   <script src="/js/cookies.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.17/vue.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/vuetify/1.3.12/vuetify.min.js"></script>
   <script src="/js/vue.components.js"></script>
   <script src="/js/vue.app.js"></script>
+
 
 </body>
 
