@@ -109,12 +109,12 @@ new Vue({
       return this.gapHours(this.standardDatetime, this.endDatetime)
     },
     workingtime () {
-      return this.gapHours(this.endDatetime, this.startDatetime)-1
+      return this.gapHours(this.startDatetime, this.endDatetime)-1
     }
   },
   methods: {
     gapHours (start, end, enableAbs) {
-      return Math.floor( Math.abs(start - end) / 1000 / 60 / 60)
+      return Math.floor( (end - start) / 1000 / 60 / 60)
     },
     confirm () {
       this.confirmed = true
