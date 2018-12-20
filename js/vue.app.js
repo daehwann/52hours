@@ -1,5 +1,4 @@
 const managerList = [
-  // {text:'TEST', value: '1FAIpQLScp5JzRN86jDgwsDW2xbbvNoiBS7kt8tBZTJW5MV-iykKd5Vg'},
   {text:'한웅', value:'1FAIpQLSeMzqRuE3I6twzxyLZ4y2EwkJyk2NPo09a4p1LvX3AQA7-RIw'},
   {text:'정진영', value: '1FAIpQLSc8cUWGrPDHMD7X_JyxrhcqhqkPmALQOsdRR5MZuklvGpCkUA'},
   {text:'배덕우', value: '1FAIpQLSepNBfnhWzJYtBJn10qrdVCaQaqiR7LLihL6AdctDay4OTKqw'},
@@ -11,6 +10,10 @@ const managerList = [
   {text:'박영서', value: '1FAIpQLSfFHgRpKJdejDfxakoOIJgXULtGSm2SF3iNlJda0E_cdbdT1w'},
   {text:'한정훈', value: '1FAIpQLSfxNENnR9EnB9cTv1oCW9pu_4pZNNoCfXrXILyvCvtqHKCWkg'}
 ]
+
+if (!/surge.sh/.test(window.location.hostname)) {
+  managerList.push({text:'TEST', value: '1FAIpQLScp5JzRN86jDgwsDW2xbbvNoiBS7kt8tBZTJW5MV-iykKd5Vg'})
+}
 
 new Vue({
   el: '#app',
@@ -121,6 +124,9 @@ new Vue({
       this.confirmDialog = false
 
       this.submit()
+    },
+    changeDate (displayDate) {
+      this.date = displayDate
     },
     submit() {
 

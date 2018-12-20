@@ -31,13 +31,18 @@
       width: 100%;
       height: 100%;
     }
+
+    table {
+      width: 100%;
+    }
+  
   </style>
 </head>
 
 <body>
   <div id="app" v-cloak>
     <v-app>
-      <v-navigation-drawer v-model="drawer" fixed left app width="200">
+      <v-navigation-drawer v-if="false" v-model="drawer" fixed left app width="200">
         <v-list>
           <v-list-tile @click="">
             <v-list-tile-action>
@@ -61,7 +66,7 @@
         <!-- <v-toolbar-side-icon @click="drawer = !drawer"></v-toolbar-side-icon> -->
         <v-toolbar-title>52 Hours</v-toolbar-title>
         <v-spacer></v-spacer>
-  
+
         <v-toolbar-items>
           <v-btn flat :disabled="!manager" :href="teamOriginalFormURL" target="_blank">
             {{ managerName }} 팀 기존 페이지로 가기
@@ -73,62 +78,65 @@
         <v-container>
 
 
-          <div>
-            <v-form>
-              <v-layout row wrap justify-space-between>
-                <v-flex sm6 xs12 px-3>
-                  <!-- Manager -->
-                  <v-select v-model="manager" dense prepend-icon="people" name="manager" :rules="inputRules.manager"
-                    :items="teamList" label="소속" required></v-select>
-                </v-flex>
-                <v-flex sm6 xs12 px-3>
-                  <!-- Username -->
-                  <v-text-field v-model="username" prepend-icon="person" name="username" :rules="inputRules.username"
-                    label="이름" id="username" required></v-text-field>
-                </v-flex>
-              </v-layout>
-
-              <v-layout row wrap>
-                <v-flex xs6 px-3>
-                  <!-- Date -->
-                  <v-menu ref="menu1" :close-on-content-click="false" v-model="menu1" :nudge-right="40" lazy transition="scale-transition"
-                    offset-y full-width max-width="290px" min-width="290px">
-                    <v-text-field readonly slot="activator" v-model="date" label="날짜" persistent-hint prepend-icon="event"></v-text-field>
-                    <v-date-picker v-model="date" :show-current="today" no-title @input="menu1 = false"></v-date-picker>
-                  </v-menu>
-                </v-flex>
-                <v-layout row wrap>
-                  <v-flex xs6 px-3>
-                    <!-- Start time -->
-                    <working-time name="출근" label-name="출근" v-model="startTime"></working-time>
+          <v-form>
+            <v-card id="newWorkingTime">
+              <v-card-title primary-title>
+                <h3 class="title">New Working Time</h3>
+              </v-card-title>
+              <v-card-text>
+                <v-layout row wrap justify-space-between>
+                  <v-flex sm6 xs12 px-3>
+                    <!-- Manager -->
+                    <v-select v-model="manager" dense prepend-icon="people" name="manager" :rules="inputRules.manager"
+                      :items="teamList" label="소속" required></v-select>
                   </v-flex>
-                  <v-flex xs6 px-3>
-                    <!-- End time -->
-                    <working-time name="퇴근" label-name="퇴근" v-model="endTime"></working-time>
+                  <v-flex sm6 xs12 px-3>
+                    <!-- Username -->
+                    <v-text-field v-model="username" prepend-icon="person" name="username" :rules="inputRules.username"
+                      label="이름" id="username" required></v-text-field>
                   </v-flex>
                 </v-layout>
-              </v-layout>
 
-              <v-layout row wrap my-3>
-                <v-flex xs12 text-xs-right>
-                  <!-- Submit -->
-                  <v-btn color="primary" @click="confirmDialog = true">제 출</v-btn>
-                </v-flex>
-              </v-layout>
-            </v-form>
-          </div>
+                <v-layout row wrap>
+                  <v-flex xs6 px-3>
+                    <!-- Date -->
+                    <v-menu ref="menu1" :close-on-content-click="false" v-model="menu1" :nudge-right="40" lazy
+                      transition="scale-transition" offset-y full-width max-width="290px" min-width="290px">
+                      <v-text-field readonly slot="activator" v-model="date" label="날짜" persistent-hint prepend-icon="event"></v-text-field>
+                      <v-date-picker v-model="date" :show-current="today" no-title @input="menu1 = false"></v-date-picker>
+                    </v-menu>
+                  </v-flex>
+                  <v-layout row wrap>
+                    <v-flex xs6 px-3>
+                      <!-- Start time -->
+                      <working-time name="출근" label-name="출근" v-model="startTime"></working-time>
+                    </v-flex>
+                    <v-flex xs6 px-3>
+                      <!-- End time -->
+                      <working-time name="퇴근" label-name="퇴근" v-model="endTime"></working-time>
+                    </v-flex>
+                  </v-layout>
+                </v-layout>
+              </v-card-text>
+              <v-card-actions>
+                <v-layout row wrap my-3>
+                  <v-flex xs12 text-xs-right>
+                    <!-- Submit -->
+                    <v-btn color="primary" @click="confirmDialog = true">제 출</v-btn>
+                  </v-flex>
+                </v-layout>
+              </v-card-actions>
+            </v-card>
+
+          </v-form>
+
         </v-container>
 
         <v-divider></v-divider>
 
         <!-- History -->
-        <v-container grid-list-xs v-if="history.length > 0">
-          <h3>History</h3>
-          <v-layout row wrap my-3>
-            <div>
-              <v-chip v-for="d in history" :key="d.id">{{ d }}</v-chip>
-            </div>
-          </v-layout>
+        <v-container grid-list-xs>
+          <history-calendar :display-date.once="date" :submitted-date="history" v-on:add="changeDate"></history-calendar>
         </v-container>
       </v-content>
 
@@ -154,16 +162,10 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
-        <v-dialog v-model="completeDialog"
-        fullscreen hide-overlay transition="dialog-bottom-transition">
-        <v-card>
+        <v-dialog v-model="completeDialog" fullscreen hide-overlay transition="dialog-bottom-transition">
+          <v-card>
             <v-toolbar primary>
-              <v-progress-circular
-                v-show="submitting"
-                :width="4"
-                indeterminate
-                color="primary"
-              ></v-progress-circular>
+              <v-progress-circular v-show="submitting" :width="4" indeterminate color="primary"></v-progress-circular>
               <v-btn v-show="!submitting" icon @click="closeComplete()">
                 <v-icon>close</v-icon>
               </v-btn>
@@ -173,19 +175,9 @@
                 <v-btn :disabled="submitting" flat @click="closeComplete()">Close</v-btn>
               </v-toolbar-items>
             </v-toolbar>
-            <!-- <v-card-title class="title">
-              <span>Go home 👏</span>
-            </v-card-title> -->
             <iframe id="submitresult" name="submitresult" scrolling="yes" @load="complete()">
               <p>Please wait...</p>
             </iframe>
-            <v-card-text width="100%" px-0>
-              
-            </v-card-text>
-            <!-- <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="primary" flat @click="completeDialog=false">Close</v-btn>
-            </v-card-actions> -->
           </v-card>
         </v-dialog>
       </div>
@@ -202,7 +194,52 @@
         <v-time-picker v-if="timemodal" v-model="time" full-width @change="$refs.menu.save(time)"></v-time-picker>
       </v-menu>
     </script>
+    <script type="text/x-template" id="history-calendar-template">
+      <v-card>
+        <v-card-title primary-title>
+          <h3 class="title">History</h3>
+        </v-card-title>
+        <v-card-text>
+          <v-layout row wrap my-3>
+            <table>
+              <thead>
+                <tr>
+                  <td class="py-3 text-xs-center grey lighten-5 grey--text"><b>일</b></td>
+                  <td class="py-3 text-xs-center grey lighten-5"><b>월</b></td>
+                  <td class="py-3 text-xs-center grey lighten-5"><b>화</b></td>
+                  <td class="py-3 text-xs-center grey lighten-5"><b>수</b></td>
+                  <td class="py-3 text-xs-center grey lighten-5"><b>목</b></td>
+                  <td class="py-3 text-xs-center grey lighten-5"><b>금</b></td>
+                  <td class="py-3 text-xs-center grey lighten-5 grey--text"><b>토</b></td>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(week, i) in weeks" :key="i">
+                  <td v-for="(day, j) in week" :key="j" class="py-3 text-xs-center grey lighten-5" >
+                      <span v-if="day && day.type === 'SUBMITTED'" class="caption">
+                        {{getMMDD(day.date)}}
+                        <v-icon disabled>check_circle_outline</v-icon><br>
+                      </span>
+                      <span v-else-if="day && day.type === 'NODATA'"  class="caption" @click="addNewDate(day.date)">
+                        {{getMMDD(day.date)}}
+                        <v-icon color="primary">add_circle</v-icon><br>
+                      </span>
+                      <span v-else-if="day && day.type === 'WEEKEND'" class="caption">
+                        {{getMMDD(day.date)}}
+                        <v-icon disabled>remove</v-icon><br>
+                      </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </v-layout>
+          
+        </v-card-text>
+      </v-card>
+    </script>
   </div>
+
+  <!-- History Template -->
 
   <script src="/js/cookies.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.17/vue.js"></script>
