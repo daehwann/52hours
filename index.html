@@ -47,6 +47,14 @@
     });
   </script>
 
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-131329692-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-131329692-1');
+  </script>
 </head>
 
 <body>
@@ -78,7 +86,7 @@
         <v-spacer></v-spacer>
 
         <v-toolbar-items>
-          <v-btn flat :disabled="!manager" :href="teamOriginalFormURL" target="_blank" class="caption">
+          <v-btn flat :disabled="!manager" :href="teamOriginalFormURL" @click="goToOriginPage()" target="_blank" class="caption">
             {{ managerName }} 팀 기존 페이지로 가기
             <v-icon>link{{ !managerName ? '_off' : ''}}</v-icon>
           </v-btn>
@@ -132,7 +140,7 @@
                 <v-layout row wrap my-3>
                   <v-flex xs12 text-xs-right>
                     <!-- Submit -->
-                    <v-btn color="primary" @click="confirmDialog = true">제 출</v-btn>
+                    <v-btn color="primary" @click="check()">제 출</v-btn>
                   </v-flex>
                 </v-layout>
               </v-card-actions>

@@ -107,6 +107,12 @@ Vue.component('history-calendar', {
         offset: 0,
         easing: 'easeInOutCubic'
       })
+
+      // analytics
+      window.gtag('event', 'click', {
+        'event_category': 'history',
+        'event_label': this.getDisplayDate(date)
+      });
     }
   },
 })

@@ -116,8 +116,24 @@ new Vue({
     }
   },
   methods: {
+    goToOriginPage () {
+      // analytics
+      window.gtag('event', 'original page', {
+        'event_category': 'link',
+        'event_label': this.managerName
+      });
+    },
     gapHours (start, end, enableAbs) {
       return Math.floor( (end - start) / 1000 / 60 / 60)
+    },
+    check() {
+      this.confirmDialog = true
+
+      // analytics
+      window.gtag('event', 'check', {
+        'event_category': 'form',
+        'event_label': this.managerName
+      });
     },
     confirm () {
       this.confirmed = true
@@ -183,6 +199,13 @@ new Vue({
       localStorage.history = this.history.join('|')
 
       this.submitting = true;
+
+      // analytics
+      window.gtag('event', 'submit', {
+        'event_category': 'form',
+        'event_label': this.managerName,
+        'value': this.overtime
+      });
     },
     complete () {
       this.submitting = false;
