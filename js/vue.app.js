@@ -86,7 +86,7 @@ new Vue({
       this.managerName = managerList
         .filter(m => m.value == this.manager)
         .map(m => m.text)
-        .pop()
+        .pop() || ''
     }
   },
   computed: {

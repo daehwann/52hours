@@ -37,6 +37,16 @@
     }
   
   </style>
+
+  <!-- AdSense -->
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({
+      google_ad_client: "ca-pub-5305365663744680",
+      enable_page_level_ads: true
+    });
+  </script>
+
 </head>
 
 <body>
@@ -64,11 +74,11 @@
       </v-navigation-drawer>
       <v-toolbar primary fixed app>
         <!-- <v-toolbar-side-icon @click="drawer = !drawer"></v-toolbar-side-icon> -->
-        <v-toolbar-title>52 Hours</v-toolbar-title>
+        <v-toolbar-title>CNX 52</v-toolbar-title>
         <v-spacer></v-spacer>
 
         <v-toolbar-items>
-          <v-btn flat :disabled="!manager" :href="teamOriginalFormURL" target="_blank">
+          <v-btn flat :disabled="!manager" :href="teamOriginalFormURL" target="_blank" class="caption">
             {{ managerName }} 팀 기존 페이지로 가기
             <v-icon>link{{ !managerName ? '_off' : ''}}</v-icon>
           </v-btn>
