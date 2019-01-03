@@ -47,15 +47,14 @@ new Vue({
     submitting: false,
     completeDialog: false,
     completed: false,
+    completedDate: null
     
     // history
     // 'history' is yyyy-MM-dd formatted text array for history
-    history: []
+    // history: []
   }),
   mounted () {
-    let month = this.now.getMonth() + 1 + ''
-    let day = this.now.getDate() + ''
-    this.date = `${this.now.getFullYear()}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+    this.date = this.getYYYYMMDD(this.now)
     this.today = this.date
 
     let hour = this.now.getHours() + ''
@@ -70,11 +69,11 @@ new Vue({
       this.manager =  localStorage.manager
     }
 
-    let history = localStorage.history || Cookies.get('h') || ''
-    this.history = history.split('|')
-      .filter(v => !!v && v!='undefined')
-      .filter((v, i, a) => a.indexOf(v) === i)
-      .sort((a, b) => b.localeCompare(a))
+    // let history = localStorage.history || Cookies.get('h') || ''
+    // this.history = history.split('|')
+    //   .filter(v => !!v && v!='undefined')
+    //   .filter((v, i, a) => a.indexOf(v) === i)
+    //   .sort((a, b) => b.localeCompare(a))
   },
   watch: {
     username(newValue, oldValue) {
@@ -116,6 +115,11 @@ new Vue({
     }
   },
   methods: {
+    getYYYYMMDD(date) {
+      let month = date.getMonth() + 1 + ''
+      let day = date.getDate() + ''
+      return `${date.getFullYear()}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+    },
     goToOriginPage () {
       // analytics
       window.gtag('event', 'original page', {
@@ -195,8 +199,7 @@ new Vue({
       this.completeDialog = true
 
       // save history
-      this.history.push(this.date)
-      localStorage.history = this.history.join('|')
+      this.completedDate = this.getYYYYMMDD(this.startDatetime)
 
       this.submitting = true;
 
