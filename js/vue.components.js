@@ -2,7 +2,7 @@ Vue.component('working-time', {
   template: '#working-time-template',
   props: {
     labelName: String,
-    value: String
+    value: String,
   },
   data () {
     return {
@@ -21,51 +21,57 @@ Vue.component('working-time', {
 Vue.component('history-calendar', {
   template: '#history-calendar-template',
   props: {
-    displayDate: String,
-    submittedDate: Array
+    completedDate: String,
+    username: String,
+    manager: String,
   },
   data () {
     return {
+      
+      firebase: {
+        baseurl: 'https://cnx-go-home.firebaseio.com'
+      },
       today: new Date(),
+      // Date Class Array
       dateList: [],
+      // For creating calendar
       weeks: [
         Array(7).fill(null),
         Array(7).fill(null),
         Array(7).fill(null),
         Array(7).fill(null),
-      ]
+      ],
+      // String date Array
+      // the String date formatted as "yyyy-MM-dd"
+      history:[]
+    }
+  },
+  mounted () {
+  },
+  computed: {
+    mydbpath() {
+      return (this.manager && this.username) ? `${this.firebase.baseurl}/manager/${this.manager}/user/${this.username}` : ''
     }
   },
   watch: {
-    displayDate (newValue, oldValue) {
-      if (!!oldValue) return; // render calendar once
-
-      this.today = new Date(`${newValue}T00:00:00+09:00`)
-      this.dateList = Array.from(Array(28).keys())
-        .map(n=> new Date(this.today.getTime() - (n * 24 * 60 * 60 * 1000)))
-
-      let tempDateList = this.dateList.copyWithin().reverse()
-      while (!!tempDateList[0] && tempDateList[0].getDay() != 0) {
-        tempDateList.shift()
-      }
-      
-      let datePointer = tempDateList.shift()
-      this.weeks = this.weeks.map((week, i) => {
-        return week.map((date, dayIndex) => {
-          if (!!datePointer && datePointer.getDay() == dayIndex) {
-            let matchDay = datePointer
-            datePointer = tempDateList.shift()
-            return {
-              date: matchDay,
-              type: this.getDateType(matchDay)
-            }
-          } else {
-            return null
-          }
-        })
-      })
+    manager (newValue, oldValue) {
+      this.refreshCalendar()
     },
-    submittedDate () {
+    completedDate(date) {
+
+      // update history list
+      if (!!date) {
+        // update calendar
+        this.history.push(this.getDisplayDate(new Date(date)))
+        
+        // save new date
+        this.storeHistory().then(({data,error}) => {
+          this.$emit('saved', data)
+        })
+        
+      }
+    },
+    history () {
       this.weeks = this.weeks.map(week => {
         return week.map(day => {
           if (!!day) {
@@ -81,6 +87,54 @@ Vue.component('history-calendar', {
     }
   },
   methods: {
+    storeHistory () {
+      return this.$http.put(this.mydbpath+'.json', this.history)
+    },
+    loadHistory () {
+      return this.$http.get(this.mydbpath+'.json')
+    },
+    setHistory (historyResponse) {
+      return new Promise((resolve, reject) => {
+        let localStorageHistory = localStorage.history || Cookies.get('h') || ''
+        let databaseHistory = historyResponse.data || []
+        this.history = databaseHistory.concat(localStorageHistory.split('|'))
+          .filter(v => !!v && v!='undefined') // 텍스트예외
+          .filter((v, i, a) => a.indexOf(v) === i)  //  중복제거
+          .sort((a, b) => b.localeCompare(a)) // 역순 정렬
+
+        resolve()
+      })
+    },
+    setCalendar(historyList) {
+      this.today = new Date()
+      this.today.setHours(0,0,0)
+      this.dateList = Array.from(Array(28).keys())
+        .map(n=> new Date(this.today.getTime() - (n * 24 * 60 * 60 * 1000)))
+
+      let _dateList = this.dateList.copyWithin().reverse()
+      // calendar 의 시작을 일요일로 맞춤
+      while (_dateList[0].getDay() != 0) _dateList.shift()
+      
+      this.weeks = this.weeks.map((week, i) => {
+        return week.map((date, dayIndex) => {
+          if (_dateList[0] && _dateList[0].getDay() == dayIndex) {
+            let matchDay = _dateList.shift()
+            return {
+              date: matchDay,
+              type: this.getDateType(matchDay)
+            }
+          } else {
+            return null
+          }
+        })
+      })
+    },
+    refreshCalendar() {
+      this.loadHistory()
+        .catch(error => [])
+        .then(this.setHistory)
+        .then(this.setCalendar)
+    },
     getDisplayDate(date) {
       return !!date ? `${date.getFullYear()}-${(date.getMonth()+1+'').padStart(2, '0')}-${(date.getDate()+'').padStart(2, '0')}` : ''
     },
@@ -92,7 +146,7 @@ Vue.component('history-calendar', {
 
       if (/0|6/.test(date.getDay())) {
         return 'WEEKEND'
-      } else if (this.submittedDate.indexOf(this.getDisplayDate(date)) > -1) {
+      } else if (this.history.indexOf(this.getDisplayDate(date)) > -1) {
         return 'SUBMITTED'
       } else {
         return 'NODATA'

@@ -15,6 +15,7 @@ if (!/surge.sh/.test(window.location.hostname)) {
   managerList.push({text:'TEST', value: '1FAIpQLScp5JzRN86jDgwsDW2xbbvNoiBS7kt8tBZTJW5MV-iykKd5Vg'})
 }
 
+Vue.prototype.$http = window.axios
 new Vue({
   el: '#app',
   data: vm => ({
@@ -34,6 +35,7 @@ new Vue({
     startTime: '09:00',
     endTime: '',
     menu1: false, // for date picker
+    breaktimeMinute: 0,
     
     // validations
     inputRules: {
@@ -47,7 +49,8 @@ new Vue({
     submitting: false,
     completeDialog: false,
     completed: false,
-    
+    completedDate: '',
+
     // history
     // 'history' is yyyy-MM-dd formatted text array for history
     history: []
@@ -109,7 +112,14 @@ new Vue({
       return new Date(`${this.date}T18:00:00+09:00`)
     },
     overtime () {
-      return this.gapHours(this.standardDatetime, this.endDatetime)
+      return this.workingtime < 8 ? 0 : this.gapHours(this.standardDatetime, this.endDatetime)
+    },
+    breaktimeDisplay () {
+      if (this.breaktimeMinute == 0) {
+        return '0h 0m'
+      } else {
+        return `${Math.floor(this.breaktimeMinute / 60)}h ${this.breaktimeMinute % 60}m`
+      }
     },
     workingtime () {
       return this.gapHours(this.startDatetime, this.endDatetime)-1
@@ -176,8 +186,8 @@ new Vue({
           'entry.2119704746_minute': this.startDatetime.getMinutes(),
           'entry.680657899_hour': this.endDatetime.getHours(),
           'entry.680657899_minute': this.endDatetime.getMinutes(),
-          'entry.1760268447_hour': this.overtime,
-          'entry.1760268447_minute': 00,
+          'entry.1760268447_hour': (this.breaktimeMinute > 0 && Math.floor(this.breaktimeMinute / 60)) || null,
+          'entry.1760268447_minute': this.breaktimeMinute % 60 || null ,
           fvv: 1,
           pageHistory: 0
         }
@@ -195,8 +205,9 @@ new Vue({
       this.completeDialog = true
 
       // save history
-      this.history.push(this.date)
-      localStorage.history = this.history.join('|')
+      this.completedDate = `${this.endDatetime.getFullYear()}-${this.endDatetime.getMonth()+1}-${this.endDatetime.getDate()}`
+      // this.history.push(this.date)
+      // localStorage.history = this.history.join('|')
 
       this.submitting = true;
 
@@ -204,7 +215,7 @@ new Vue({
       window.gtag('event', 'submit', {
         'event_category': 'form',
         'event_label': this.managerName,
-        'value': this.overtime
+        'value': this.breaktime
       });
     },
     complete () {
