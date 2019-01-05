@@ -16,6 +16,7 @@ if (!/surge.sh/.test(window.location.hostname)) {
 }
 
 Vue.prototype.$http = window.axios
+Vue.prototype.$version = '0.4.2'
 new Vue({
   el: '#app',
   data: vm => ({
@@ -72,12 +73,6 @@ new Vue({
     if (localStorage.manager) {
       this.manager =  localStorage.manager
     }
-
-    let history = localStorage.history || Cookies.get('h') || ''
-    this.history = history.split('|')
-      .filter(v => !!v && v!='undefined')
-      .filter((v, i, a) => a.indexOf(v) === i)
-      .sort((a, b) => b.localeCompare(a))
   },
   watch: {
     username(newValue, oldValue) {
@@ -186,8 +181,8 @@ new Vue({
           'entry.2119704746_minute': this.startDatetime.getMinutes(),
           'entry.680657899_hour': this.endDatetime.getHours(),
           'entry.680657899_minute': this.endDatetime.getMinutes(),
-          'entry.1760268447_hour': (this.breaktimeMinute > 0 && Math.floor(this.breaktimeMinute / 60)) || null,
-          'entry.1760268447_minute': this.breaktimeMinute % 60 || null ,
+          'entry.1760268447_hour': this.breaktimeMinute > 0 ? Math.floor(this.breaktimeMinute / 60) : 0,
+          'entry.1760268447_minute': this.breaktimeMinute % 60,
           fvv: 1,
           pageHistory: 0
         }
