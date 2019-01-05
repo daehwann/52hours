@@ -15,6 +15,8 @@ if (!/surge.sh/.test(window.location.hostname)) {
   managerList.push({text:'TEST', value: '1FAIpQLScp5JzRN86jDgwsDW2xbbvNoiBS7kt8tBZTJW5MV-iykKd5Vg'})
 }
 
+Vue.prototype.$http = window.axios
+Vue.prototype.$version = '0.4.2'
 new Vue({
   el: '#app',
   data: vm => ({
@@ -34,6 +36,7 @@ new Vue({
     startTime: '09:00',
     endTime: '',
     menu1: false, // for date picker
+    breaktimeMinute: 0,
     
     // validations
     inputRules: {
@@ -47,14 +50,16 @@ new Vue({
     submitting: false,
     completeDialog: false,
     completed: false,
-    completedDate: null
-    
+    completedDate: '',
+
     // history
     // 'history' is yyyy-MM-dd formatted text array for history
-    // history: []
+    history: []
   }),
   mounted () {
-    this.date = this.getYYYYMMDD(this.now)
+    let month = this.now.getMonth() + 1 + ''
+    let day = this.now.getDate() + ''
+    this.date = `${this.now.getFullYear()}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
     this.today = this.date
 
     let hour = this.now.getHours() + ''
@@ -68,12 +73,6 @@ new Vue({
     if (localStorage.manager) {
       this.manager =  localStorage.manager
     }
-
-    // let history = localStorage.history || Cookies.get('h') || ''
-    // this.history = history.split('|')
-    //   .filter(v => !!v && v!='undefined')
-    //   .filter((v, i, a) => a.indexOf(v) === i)
-    //   .sort((a, b) => b.localeCompare(a))
   },
   watch: {
     username(newValue, oldValue) {
@@ -108,18 +107,20 @@ new Vue({
       return new Date(`${this.date}T18:00:00+09:00`)
     },
     overtime () {
-      return this.gapHours(this.standardDatetime, this.endDatetime)
+      return this.workingtime < 8 ? 0 : this.gapHours(this.standardDatetime, this.endDatetime)
+    },
+    breaktimeDisplay () {
+      if (this.breaktimeMinute == 0) {
+        return '0h 0m'
+      } else {
+        return `${Math.floor(this.breaktimeMinute / 60)}h ${this.breaktimeMinute % 60}m`
+      }
     },
     workingtime () {
       return this.gapHours(this.startDatetime, this.endDatetime)-1
     }
   },
   methods: {
-    getYYYYMMDD(date) {
-      let month = date.getMonth() + 1 + ''
-      let day = date.getDate() + ''
-      return `${date.getFullYear()}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
-    },
     goToOriginPage () {
       // analytics
       window.gtag('event', 'original page', {
@@ -180,8 +181,8 @@ new Vue({
           'entry.2119704746_minute': this.startDatetime.getMinutes(),
           'entry.680657899_hour': this.endDatetime.getHours(),
           'entry.680657899_minute': this.endDatetime.getMinutes(),
-          'entry.1760268447_hour': this.overtime,
-          'entry.1760268447_minute': 00,
+          'entry.1760268447_hour': this.breaktimeMinute > 0 ? Math.floor(this.breaktimeMinute / 60) : 0,
+          'entry.1760268447_minute': this.breaktimeMinute % 60,
           fvv: 1,
           pageHistory: 0
         }
@@ -199,7 +200,9 @@ new Vue({
       this.completeDialog = true
 
       // save history
-      this.completedDate = this.getYYYYMMDD(this.startDatetime)
+      this.completedDate = `${this.endDatetime.getFullYear()}-${this.endDatetime.getMonth()+1}-${this.endDatetime.getDate()}`
+      // this.history.push(this.date)
+      // localStorage.history = this.history.join('|')
 
       this.submitting = true;
 
@@ -207,7 +210,7 @@ new Vue({
       window.gtag('event', 'submit', {
         'event_category': 'form',
         'event_label': this.managerName,
-        'value': this.overtime
+        'value': this.breaktime
       });
     },
     complete () {

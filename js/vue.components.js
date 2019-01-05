@@ -21,64 +21,54 @@ Vue.component('working-time', {
 Vue.component('history-calendar', {
   template: '#history-calendar-template',
   props: {
-    submittedDate: Array,
-    completedDate: String
-
+    completedDate: String,
+    username: String,
+    manager: String,
   },
   data () {
     return {
+      
+      firebase: {
+        baseurl: 'https://cnx-go-home.firebaseio.com'
+      },
       today: new Date(),
+      // Date Class Array
       dateList: [],
+      // For creating calendar
       weeks: [
         Array(7).fill(null),
         Array(7).fill(null),
         Array(7).fill(null),
         Array(7).fill(null),
       ],
-      history
+      // String date Array
+      // the String date formatted as "yyyy-MM-dd"
+      history:[]
     }
   },
   mounted () {
-    console.log('MOUNTED')
-
-    let history = localStorage.history || Cookies.get('h') || ''
-    this.history = history.split('|')
-      .filter(v => !!v && v!='undefined')
-      .filter((v, i, a) => a.indexOf(v) === i)
-      .sort((a, b) => b.localeCompare(a))
-
-    this.today = new Date()
-    this.today.setHours(0,0,0)
-    this.dateList = Array.from(Array(28).keys())
-      .map(n=> new Date(this.today.getTime() - (n * 24 * 60 * 60 * 1000)))
-
-    let _dateList = this.dateList.copyWithin().reverse()
-    // calendar 의 시작을 일요일로 맞춤
-    while (_dateList[0].getDay() != 0) _dateList.shift()
-    
-    this.weeks = this.weeks.map((week, i) => {
-      return week.map((date, dayIndex) => {
-        if (_dateList[0] && _dateList[0].getDay() == dayIndex) {
-          let matchDay = _dateList.shift()
-          return {
-            date: matchDay,
-            type: this.getDateType(matchDay)
-          }
-        } else {
-          return null
-        }
-      })
-    })
+  },
+  computed: {
+    mydbpath() {
+      return (this.manager && this.username) ? `${this.firebase.baseurl}/manager/${this.manager}/user/${this.username}` : ''
+    }
   },
   watch: {
+    manager (newValue, oldValue) {
+      this.refreshCalendar()
+    },
     completedDate(date) {
+
       // update history list
       if (!!date) {
+        // update calendar
+        this.history.push(this.getDisplayDate(new Date(date)))
+        
         // save new date
-        setTimeout(() => {
-          this.$emit('saved', true)
-          console.log('saved', date)
-        }, 2000)
+        this.storeHistory().then(({data,error}) => {
+          this.$emit('saved', data)
+        })
+        
       }
     },
     history () {
@@ -97,8 +87,53 @@ Vue.component('history-calendar', {
     }
   },
   methods: {
-    dbsync () {
+    storeHistory () {
+      return this.$http.put(this.mydbpath+'.json', this.history)
+    },
+    loadHistory () {
+      return this.$http.get(this.mydbpath+'.json')
+    },
+    setHistory (historyResponse) {
+      return new Promise((resolve, reject) => {
+        let localStorageHistory = localStorage.history || Cookies.get('h') || ''
+        let databaseHistory = historyResponse.data || []
+        this.history = databaseHistory.concat(localStorageHistory.split('|'))
+          .filter(v => !!v && v!='undefined') // 텍스트예외
+          .filter((v, i, a) => a.indexOf(v) === i)  //  중복제거
+          .sort((a, b) => b.localeCompare(a)) // 역순 정렬
+
+        resolve()
+      })
+    },
+    setCalendar(historyList) {
+      this.today = new Date()
+      this.today.setHours(0,0,0)
+      this.dateList = Array.from(Array(28).keys())
+        .map(n=> new Date(this.today.getTime() - (n * 24 * 60 * 60 * 1000)))
+
+      let _dateList = this.dateList.copyWithin().reverse()
+      // calendar 의 시작을 일요일로 맞춤
+      while (_dateList[0].getDay() != 0) _dateList.shift()
       
+      this.weeks = this.weeks.map((week, i) => {
+        return week.map((date, dayIndex) => {
+          if (_dateList[0] && _dateList[0].getDay() == dayIndex) {
+            let matchDay = _dateList.shift()
+            return {
+              date: matchDay,
+              type: this.getDateType(matchDay)
+            }
+          } else {
+            return null
+          }
+        })
+      })
+    },
+    refreshCalendar() {
+      this.loadHistory()
+        .catch(error => [])
+        .then(this.setHistory)
+        .then(this.setCalendar)
     },
     getDisplayDate(date) {
       return !!date ? `${date.getFullYear()}-${(date.getMonth()+1+'').padStart(2, '0')}-${(date.getDate()+'').padStart(2, '0')}` : ''
