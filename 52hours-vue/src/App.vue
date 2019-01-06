@@ -1,52 +1,32 @@
 <template>
-  <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div>
-    <router-view/>
-
+  <v-app id="app">
+    <!-- Header -->
     <header-toolbar/>
 
-    <v-content>
-      <v-container>
-        <!-- Form -->
-        <working-time-form />
-      </v-container>
+    <!-- Contents -->
+    <router-view/>
 
-      <v-divider></v-divider>
-
-      <!-- History -->
-      <v-container grid-list-xs>
-        <history-calendar
-          :manager="managerName"
-          :username="username"
-          :completed-date="completedDate" 
-          v-on:saved="completedDate = null" 
-          v-on:add="changeDate">
-        </history-calendar>
-      </v-container>
-    </v-content>
-
+    <!-- Footer -->
     <v-footer app height="50">
-      <div class="pa-4">52hours v{{ $version }}</div>
+      <div class="pa-4">52hours v{{ version }}</div>
       <v-spacer></v-spacer>
       <div class="pa-4"> &copy; {{ new Date().getFullYear() }}</div>
     </v-footer>
-  </div>
+  </v-app>
 </template>
 
 <script>
-// import HeaderToolbar from './components/HeaderToolbar'
-import WorkingTimeForm from './components/WorkingTime'
-import HistoryCalendar from './components/HistoryCalendar'
-
+import {version} from '../package.json'
+import HeaderToolbar from './components/HeaderToolbar.vue'
 
 export default {
   components: {
-    HeaderToolbar,
-    WorkingTimeForm,
-    HistoryCalendar
+    HeaderToolbar
+  },
+  data () {
+    return {
+      version: version
+    }
   }
 }
 </script>

@@ -47,12 +47,11 @@
 export default {
   props: {
     completedDate: String,
-    username: String,
-    manager: String,
+    // username: String,
+    // managername: String,
   },
   data () {
     return {
-      
       firebase: {
         baseurl: 'https://cnx-go-home.firebaseio.com'
       },
@@ -72,25 +71,34 @@ export default {
     }
   },
   mounted () {
+    
   },
   computed: {
     mydbpath() {
-      return (this.manager && this.username) ? `${this.firebase.baseurl}/manager/${this.manager}/user/${this.username}` : ''
+      return (this.managername && this.username) ? `${this.firebase.baseurl}/manager/${this.managername}/user/${this.username}` : ''
+    },
+    username () {
+      return this.$store.getters.username
+    },
+    managername() {
+      console.log('managername computed')
+      return this.$store.getters.managername
     }
   },
   watch: {
-    manager (newValue, oldValue) {
+    managername (newValue) {
+      console.log('managername watched', newValue)
       this.refreshCalendar()
     },
     completedDate(date) {
 
       // update history list
-      if (!!date) {
+      if (date) {
         // update calendar
         this.history.push(this.getDisplayDate(new Date(date)))
         
         // save new date
-        this.storeHistory().then(({data,error}) => {
+        this.storeHistory().then(({data}) => {
           this.$emit('saved', data)
         })
         
@@ -99,7 +107,7 @@ export default {
     history () {
       this.weeks = this.weeks.map(week => {
         return week.map(day => {
-          if (!!day) {
+          if (day) {
             return {
               date: day.date,
               type: this.getDateType(day.date)
@@ -118,19 +126,23 @@ export default {
     loadHistory () {
       return this.$http.get(this.mydbpath+'.json')
     },
-    setHistory (historyResponse) {
+    setHistory ({data: response, error: error}) {
       return new Promise((resolve, reject) => {
-        let localStorageHistory = localStorage.history || Cookies.get('h') || ''
-        let databaseHistory = historyResponse.data || []
-        this.history = databaseHistory.concat(localStorageHistory.split('|'))
-          .filter(v => !!v && v!='undefined') // 텍스트예외
-          .filter((v, i, a) => a.indexOf(v) === i)  //  중복제거
-          .sort((a, b) => b.localeCompare(a)) // 역순 정렬
+        if (error) {
+          reject(error)
+        } else {
+          let localStorageHistory = localStorage.history || ''
+          let databaseHistory = response || []
+          this.history = databaseHistory.concat(localStorageHistory.split('|'))
+            .filter(v => !!v && v!='undefined') // 텍스트예외
+            .filter((v, i, a) => a.indexOf(v) === i)  //  중복제거
+            .sort((a, b) => b.localeCompare(a)) // 역순 정렬
 
-        resolve()
+          resolve()
+        }
       })
     },
-    setCalendar(historyList) {
+    setCalendar () {
       this.today = new Date()
       this.today.setHours(0,0,0)
       this.dateList = Array.from(Array(28).keys())
@@ -140,7 +152,7 @@ export default {
       // calendar 의 시작을 일요일로 맞춤
       while (_dateList[0].getDay() != 0) _dateList.shift()
       
-      this.weeks = this.weeks.map((week, i) => {
+      this.weeks = this.weeks.map((week) => {
         return week.map((date, dayIndex) => {
           if (_dateList[0] && _dateList[0].getDay() == dayIndex) {
             let matchDay = _dateList.shift()
@@ -156,12 +168,12 @@ export default {
     },
     refreshCalendar() {
       this.loadHistory()
-        .catch(error => [])
+        .catch(console.error)
         .then(this.setHistory)
         .then(this.setCalendar)
     },
     getDisplayDate(date) {
-      return !!date ? `${date.getFullYear()}-${(date.getMonth()+1+'').padStart(2, '0')}-${(date.getDate()+'').padStart(2, '0')}` : ''
+      return date ? `${date.getFullYear()}-${(date.getMonth()+1+'').padStart(2, '0')}-${(date.getDate()+'').padStart(2, '0')}` : ''
     },
     getMMDD(date) {
       return this.getDisplayDate(date).substr(5).replace('-', '/')

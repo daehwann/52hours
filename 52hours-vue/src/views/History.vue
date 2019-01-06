@@ -1,16 +1,16 @@
 <template>
   <v-content>
       <v-container>
-        <working-time-form />
+        <history-calendar />
       </v-container>
   </v-content>
 </template>
 
 <script>
-import WorkingTimeForm from '../components/WorkingTimeForm.vue'
+import HistoryCalendar from '../components/HistoryCalendar.vue'
 export default {
   components: {
-    WorkingTimeForm
+    HistoryCalendar
   }
 }
 </script>

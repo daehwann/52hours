@@ -14,7 +14,7 @@
           <v-flex sm6 xs12 px-3>
             <!-- Manager -->
             <v-select v-model="manager" dense prepend-icon="people" name="manager" :rules="inputRules.manager"
-              :items="teamList" label="매니저" required></v-select>
+              :items="managerList" label="매니저" required></v-select>
           </v-flex>
         </v-layout>
 
@@ -30,11 +30,11 @@
           <v-layout row wrap>
             <v-flex xs6 px-3>
               <!-- Start time -->
-              <working-time name="출근" label-name="출근" v-model="startTime"></working-time>
+              <time-picker name="출근" label-name="출근" v-model="startTime"></time-picker>
             </v-flex>
             <v-flex xs6 px-3>
               <!-- End time -->
-              <working-time name="퇴근" label-name="퇴근" v-model="endTime" :rules="inputRules.workingtime"></working-time>
+              <time-picker name="퇴근" label-name="퇴근" v-model="endTime" :rules="inputRules.workingtime"></time-picker>
             </v-flex>
           </v-layout>
           <v-layout row wrap>
@@ -110,6 +110,8 @@
 </template>
 
 <script>
+import TimePicker from './TimePicker.vue'
+
 export default {
   data () {
     return {
@@ -119,8 +121,18 @@ export default {
       // user
       username: '',
       manager: '',
-      managerName: '',
-      teamList: managerList,
+      managerList: [
+        {text:'한웅', value:'1FAIpQLSeMzqRuE3I6twzxyLZ4y2EwkJyk2NPo09a4p1LvX3AQA7-RIw'},
+        {text:'정진영', value: '1FAIpQLSc8cUWGrPDHMD7X_JyxrhcqhqkPmALQOsdRR5MZuklvGpCkUA'},
+        {text:'배덕우', value: '1FAIpQLSepNBfnhWzJYtBJn10qrdVCaQaqiR7LLihL6AdctDay4OTKqw'},
+        {text:'최인호', value: '1FAIpQLSdZ3ykSfeJIp94N7zoJuImU-ZglaUkkPc-FLgiUcZkUkkRdgQ'},
+        {text:'조희제', value: '1FAIpQLSfjiyuJmey5ZUcJYgqqC0fZBlcCtktyeFZwANmym4f1B4QmXQ'},
+        {text:'장예성', value: '1FAIpQLSdEbsAkX9iHWF8603UXETPKcV3MEna2gOHRekZ1nIcdyU8w5w'},
+        {text:'김경희', value: '1FAIpQLSd3OeLXwiW9fnAxJQOZwQ_LT2Dk_SROfnE8kOVciueXQsYDcQ'},
+        {text:'김세정', value: '1FAIpQLScutj6ijHDN1hUZZ1l03lfGLbcSMRMzurq-dMOvx5BFrcUTfA'},
+        {text:'박영서', value: '1FAIpQLSfFHgRpKJdejDfxakoOIJgXULtGSm2SF3iNlJda0E_cdbdT1w'},
+        {text:'한정훈', value: '1FAIpQLSfxNENnR9EnB9cTv1oCW9pu_4pZNNoCfXrXILyvCvtqHKCWkg'}
+      ],
       
       // date & time
       now: new Date(),
@@ -143,12 +155,7 @@ export default {
       submitting: false,
       completeDialog: false,
       completed: false,
-      completedDate: '',
-  
-      // history
-      // 'history' is yyyy-MM-dd formatted text array for history
-      history: []
-
+      completedDate: ''
     }
   },
   
@@ -163,7 +170,7 @@ export default {
     this.endTime = `${hour.padStart(2, '0')}:${min.padStart(2, '0')}`
 
     if (localStorage.username) {
-      this.username = localStorage.username || Cookies.get('username')
+      this.username = localStorage.username
     }
 
     if (localStorage.manager) {
@@ -171,19 +178,22 @@ export default {
     }
   },
   watch: {
-    username(newValue, oldValue) {
+    username(newValue) {
       localStorage.username = newValue
+      this.$store.commit('username', newValue)
     },
     manager(newValue) {
       localStorage.manager = newValue
-
-      this.managerName = managerList
-        .filter(m => m.value == this.manager)
-        .map(m => m.text)
-        .pop() || ''
+      this.$store.commit('managername', this.managername)
     }
   },
   computed: {
+    managername () {
+      return this.managerList
+        .filter(m => m.value == this.manager)
+        .map(m => m.text)
+        .pop() || ''
+    },
     teamResponseURL() {
       return `https://docs.google.com/forms/d/e/${this.manager}/formResponse`
     },
@@ -221,10 +231,10 @@ export default {
       // analytics
       window.gtag('event', 'original page', {
         'event_category': 'link',
-        'event_label': this.managerName
+        'event_label': this.managername
       });
     },
-    gapHours (start, end, enableAbs) {
+    gapHours (start, end) {
       return Math.floor( (end - start) / 1000 / 60 / 60)
     },
     check() {
@@ -233,7 +243,7 @@ export default {
       // analytics
       window.gtag('event', 'check', {
         'event_category': 'form',
-        'event_label': this.managerName
+        'event_label': this.managername
       });
     },
     confirm () {
@@ -255,15 +265,15 @@ export default {
       document.body.append(f)
 
       var param;
-      if (this.managerName === 'TEST') {
+      if (this.managername === 'TEST') {
         /*** TEST FORM ***/
         param = {
           'entry.49582767_year': 2018,
           'entry.49582767_month': 12,
           'entry.49582767_day': 12,
           'entry.2048335593': '조대환',
-          'entry.1435532183_hour': 01,
-          'entry.1435532183_minute': 00,
+          'entry.1435532183_hour': 1,
+          'entry.1435532183_minute': 0,
           fvv: 1,
           pageHistory: 0
         }
@@ -305,9 +315,9 @@ export default {
       // analytics
       window.gtag('event', 'submit', {
         'event_category': 'form',
-        'event_label': this.managerName,
+        'event_label': this.managername,
         'value': this.breaktime
-      });
+      })
     },
     complete () {
       this.submitting = false;
@@ -318,7 +328,9 @@ export default {
       this.completed = false
       this.completeDialog = false
     }
+  },
+  components: {
+    TimePicker
   }
 }
 </script>
-
