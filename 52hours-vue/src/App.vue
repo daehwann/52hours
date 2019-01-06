@@ -5,27 +5,64 @@
       <router-link to="/about">About</router-link>
     </div>
     <router-view/>
+
+    <header-toolbar/>
+
+    <v-content>
+      <v-container>
+        <!-- Form -->
+        <working-time-form />
+      </v-container>
+
+      <v-divider></v-divider>
+
+      <!-- History -->
+      <v-container grid-list-xs>
+        <history-calendar
+          :manager="managerName"
+          :username="username"
+          :completed-date="completedDate" 
+          v-on:saved="completedDate = null" 
+          v-on:add="changeDate">
+        </history-calendar>
+      </v-container>
+    </v-content>
+
+    <v-footer app height="50">
+      <div class="pa-4">52hours v{{ $version }}</div>
+      <v-spacer></v-spacer>
+      <div class="pa-4"> &copy; {{ new Date().getFullYear() }}</div>
+    </v-footer>
   </div>
 </template>
 
+<script>
+// import HeaderToolbar from './components/HeaderToolbar'
+import WorkingTimeForm from './components/WorkingTime'
+import HistoryCalendar from './components/HistoryCalendar'
+
+
+export default {
+  components: {
+    HeaderToolbar,
+    WorkingTimeForm,
+    HistoryCalendar
+  }
+}
+</script>
+
+
 <style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
+[v-cloak] {
+  display: none;
 }
-#nav {
-  padding: 30px;
+iframe {
+  border: 0em;
+  width: 100%;
+  height: 100%;
 }
 
-#nav a {
-  font-weight: bold;
-  color: #2c3e50;
-}
-
-#nav a.router-link-exact-active {
-  color: #42b983;
+table {
+  width: 100%;
 }
 </style>

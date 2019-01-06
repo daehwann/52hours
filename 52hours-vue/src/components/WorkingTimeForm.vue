@@ -1,0 +1,324 @@
+<template>
+  <v-form>
+    <v-card id="newWorkingTime">
+      <v-card-title primary-title>
+        <h3 class="title">New Working Time</h3>
+      </v-card-title>
+      <v-card-text>
+        <v-layout row wrap justify-space-between>
+          <v-flex sm6 xs12 px-3>
+            <!-- Username -->
+            <v-text-field v-model="username" prepend-icon="person" name="username" :rules="inputRules.username"
+              label="이름" id="username" required></v-text-field>
+          </v-flex>
+          <v-flex sm6 xs12 px-3>
+            <!-- Manager -->
+            <v-select v-model="manager" dense prepend-icon="people" name="manager" :rules="inputRules.manager"
+              :items="teamList" label="매니저" required></v-select>
+          </v-flex>
+        </v-layout>
+
+        <v-layout row wrap>
+          <v-flex xs6 px-3>
+            <!-- Date -->
+            <v-menu ref="menu1" :close-on-content-click="false" v-model="menu1" :nudge-right="40" lazy
+              transition="scale-transition" offset-y full-width max-width="290px" min-width="290px">
+              <v-text-field readonly slot="activator" v-model="date" label="날짜" persistent-hint prepend-icon="event"></v-text-field>
+              <v-date-picker v-model="date" :show-current="today" no-title @input="menu1 = false"></v-date-picker>
+            </v-menu>
+          </v-flex>
+          <v-layout row wrap>
+            <v-flex xs6 px-3>
+              <!-- Start time -->
+              <working-time name="출근" label-name="출근" v-model="startTime"></working-time>
+            </v-flex>
+            <v-flex xs6 px-3>
+              <!-- End time -->
+              <working-time name="퇴근" label-name="퇴근" v-model="endTime" :rules="inputRules.workingtime"></working-time>
+            </v-flex>
+          </v-layout>
+          <v-layout row wrap>
+            <!-- Breaktime -->
+            <v-flex xs6 sm4 px-3>
+              <v-text-field
+                prepend-icon="free_breakfast"
+                readonly
+                name="breaktimeDisplay"
+                label="휴식"
+                v-model="breaktimeDisplay"
+                persistent-hint
+                hint="점심시간 제외"
+              ></v-text-field>
+            </v-flex>
+            <v-flex xs6 sm8 pl-3>
+              <v-slider label-name="휴식시간" ticks step="10" v-model="breaktimeMinute" min="0" max="120"></v-slider>
+            </v-flex>
+          </v-layout>
+        </v-layout>
+      </v-card-text>
+      <v-card-actions>
+        <v-layout row wrap my-3>
+          <v-flex xs12 text-xs-right>
+            <!-- Submit -->
+            <v-btn color="primary" @click="check()">확인 후 제출</v-btn>
+          </v-flex>
+        </v-layout>
+      </v-card-actions>
+    </v-card>
+
+    <!-- Dialogs-->
+    <v-dialog v-model="confirmDialog" max-width="290">
+      <v-card>
+        <v-card-title class="title">제출 하시겠습니까?</v-card-title>
+        <v-card-text class="text-xs-center">
+          <p class="body-2">{{ date }}</p>
+          <p class="body-2">{{ startTime }} ~ {{ endTime }}</p>
+          <p class="body-2">근무시간: {{ workingtime }}h</p>
+          <p class="body-2">휴식시간: {{ breaktimeDisplay }}</p>
+          <p class="body-2">초과시간: {{ overtime }}h</p>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn flat="flat" @click="confirmDialog = false">
+            CANCEL
+          </v-btn>
+          <v-btn color="primary" flat="flat" @click="confirm()">
+            OK
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <v-dialog v-model="completeDialog" fullscreen hide-overlay transition="dialog-bottom-transition">
+      <v-card>
+        <v-toolbar primary>
+          <v-progress-circular v-show="submitting" :width="4" indeterminate color="primary"></v-progress-circular>
+          <v-btn v-show="!submitting" icon @click="closeComplete()">
+            <v-icon>close</v-icon>
+          </v-btn>
+          <v-toolbar-title>{{ submitting ? '전송중...' : '제출 완료' }}</v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+            <v-btn :disabled="submitting" flat @click="closeComplete()">Close</v-btn>
+          </v-toolbar-items>
+        </v-toolbar>
+        <iframe id="submitresult" name="submitresult" scrolling="yes" @load="complete()">
+          <p>Please wait...</p>
+        </iframe>
+      </v-card>
+    </v-dialog>
+  </v-form>
+</template>
+
+<script>
+export default {
+  data () {
+    return {
+      // menu
+      drawer: false,
+  
+      // user
+      username: '',
+      manager: '',
+      managerName: '',
+      teamList: managerList,
+      
+      // date & time
+      now: new Date(),
+      date: '',
+      today: '',
+      startTime: '09:00',
+      endTime: '',
+      menu1: false, // for date picker
+      breaktimeMinute: 0,
+      
+      // validations
+      inputRules: {
+        manager: [ (v) => !!v || '소속을 선택하세요.'],
+        username: [ (v) => !!v || '이름을 입력하세요.']
+      },
+  
+      // dialogs
+      confirmDialog: false,
+      confirmed: false,
+      submitting: false,
+      completeDialog: false,
+      completed: false,
+      completedDate: '',
+  
+      // history
+      // 'history' is yyyy-MM-dd formatted text array for history
+      history: []
+
+    }
+  },
+  
+  mounted () {
+    let month = this.now.getMonth() + 1 + ''
+    let day = this.now.getDate() + ''
+    this.date = `${this.now.getFullYear()}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+    this.today = this.date
+
+    let hour = this.now.getHours() + ''
+    let min = this.now.getMinutes() + ''
+    this.endTime = `${hour.padStart(2, '0')}:${min.padStart(2, '0')}`
+
+    if (localStorage.username) {
+      this.username = localStorage.username || Cookies.get('username')
+    }
+
+    if (localStorage.manager) {
+      this.manager =  localStorage.manager
+    }
+  },
+  watch: {
+    username(newValue, oldValue) {
+      localStorage.username = newValue
+    },
+    manager(newValue) {
+      localStorage.manager = newValue
+
+      this.managerName = managerList
+        .filter(m => m.value == this.manager)
+        .map(m => m.text)
+        .pop() || ''
+    }
+  },
+  computed: {
+    teamResponseURL() {
+      return `https://docs.google.com/forms/d/e/${this.manager}/formResponse`
+    },
+    teamOriginalFormURL() {
+      if (!this.manager) {
+        return "javascript:alert('소속을 선택하세요')"
+      }
+      return `https://docs.google.com/forms/d/e/${this.manager}/viewform`
+    },
+    startDatetime () {
+      return new Date(`${this.date}T${this.startTime}+09:00`)
+    },
+    endDatetime () {
+      return new Date(`${this.date}T${this.endTime}+09:00`)
+    },
+    standardDatetime () {
+      return new Date(`${this.date}T18:00:00+09:00`)
+    },
+    overtime () {
+      return this.workingtime < 8 ? 0 : this.gapHours(this.standardDatetime, this.endDatetime)
+    },
+    breaktimeDisplay () {
+      if (this.breaktimeMinute == 0) {
+        return '0h 0m'
+      } else {
+        return `${Math.floor(this.breaktimeMinute / 60)}h ${this.breaktimeMinute % 60}m`
+      }
+    },
+    workingtime () {
+      return this.gapHours(this.startDatetime, this.endDatetime)-1
+    }
+  },
+  methods: {
+    goToOriginPage () {
+      // analytics
+      window.gtag('event', 'original page', {
+        'event_category': 'link',
+        'event_label': this.managerName
+      });
+    },
+    gapHours (start, end, enableAbs) {
+      return Math.floor( (end - start) / 1000 / 60 / 60)
+    },
+    check() {
+      this.confirmDialog = true
+
+      // analytics
+      window.gtag('event', 'check', {
+        'event_category': 'form',
+        'event_label': this.managerName
+      });
+    },
+    confirm () {
+      this.confirmed = true
+      this.confirmDialog = false
+
+      this.submit()
+    },
+    changeDate (displayDate) {
+      this.date = displayDate
+    },
+    submit() {
+
+      var f = document.createElement('form')
+      f.setAttribute('method', 'POST')
+      f.setAttribute('action', this.teamResponseURL)
+      f.target = 'submitresult' // in the complete dialog iframe
+      f.style = 'display:none'
+      document.body.append(f)
+
+      var param;
+      if (this.managerName === 'TEST') {
+        /*** TEST FORM ***/
+        param = {
+          'entry.49582767_year': 2018,
+          'entry.49582767_month': 12,
+          'entry.49582767_day': 12,
+          'entry.2048335593': '조대환',
+          'entry.1435532183_hour': 01,
+          'entry.1435532183_minute': 00,
+          fvv: 1,
+          pageHistory: 0
+        }
+      } else {
+        param = {
+          'entry.1065843082_year': this.endDatetime.getFullYear(),
+          'entry.1065843082_month': this.endDatetime.getMonth() + 1,
+          'entry.1065843082_day': this.endDatetime.getDate(),
+          'entry.1467693251': this.username,
+          'entry.2119704746_hour': this.startDatetime.getHours(),
+          'entry.2119704746_minute': this.startDatetime.getMinutes(),
+          'entry.680657899_hour': this.endDatetime.getHours(),
+          'entry.680657899_minute': this.endDatetime.getMinutes(),
+          'entry.1760268447_hour': this.breaktimeMinute > 0 ? Math.floor(this.breaktimeMinute / 60) : 0,
+          'entry.1760268447_minute': this.breaktimeMinute % 60,
+          fvv: 1,
+          pageHistory: 0
+        }
+      }
+
+      Object.keys(param).forEach(key => {
+        var el = document.createElement('input')
+        el.name = key
+        el.value = param[key]
+        f.append(el)
+      })
+      
+      f.submit()
+      f.remove()
+      this.completeDialog = true
+
+      // save history
+      this.completedDate = `${this.endDatetime.getFullYear()}-${this.endDatetime.getMonth()+1}-${this.endDatetime.getDate()}`
+      // this.history.push(this.date)
+      // localStorage.history = this.history.join('|')
+
+      this.submitting = true;
+
+      // analytics
+      window.gtag('event', 'submit', {
+        'event_category': 'form',
+        'event_label': this.managerName,
+        'value': this.breaktime
+      });
+    },
+    complete () {
+      this.submitting = false;
+      this.completed = true;
+    },
+    closeComplete () {
+      document.getElementById('submitresult').src = ''
+      this.completed = false
+      this.completeDialog = false
+    }
+  }
+}
+</script>
+
