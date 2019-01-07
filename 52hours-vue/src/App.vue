@@ -30,19 +30,3 @@ export default {
   }
 }
 </script>
-
-
-<style>
-[v-cloak] {
-  display: none;
-}
-iframe {
-  border: 0em;
-  width: 100%;
-  height: 100%;
-}
-
-table {
-  width: 100%;
-}
-</style>

@@ -45,17 +45,11 @@
 </template>
 
 <script>
+import mapGetters from 'vuex'
+
 export default {
-  props: {
-    completedDate: String,
-    // username: String,
-    // managername: String,
-  },
   data () {
     return {
-      firebase: {
-        baseurl: 'https://cnx-go-home.firebaseio.com'
-      },
       today: new Date(),
       // Date Class Array
       dateList: [],
@@ -66,59 +60,21 @@ export default {
         Array(7).fill(null),
         Array(7).fill(null),
       ],
-      // String date Array
-      // the String date formatted as "yyyy-MM-dd"
-      history:[],
-      username: this.$store.state.username,
-      managername: this.$store.state.managername
     }
   },
   mounted () {
-    if (this.$store.state.newDateSubmitted) {
-      this.history.push(this.$store.state.newDateSubmitted)
-      this.storeHistory().then(this.refreshCalendar)
-      this.$store.commit('newDateSubmitted', '')
-    }
-
     if (this.username && this.managername) {
-      this.refreshCalendar()
+      this.$store.dispatch('loadHistory')
     } else {
       this.$router.push({path:'/'})
     }
-
-    
   },
   computed: {
-    mydbpath() {
-      return (this.managername && this.username) ? `${this.firebase.baseurl}/manager/${this.managername}/user/${this.username}` : ''
-    },
-    // username () {
-    //   return this.$store.state.username
-    // },
-    // managername() {
-    //   console.log('managername computed', arguments)
-    //   return this.$store.state.managername
-    // }
+    ...mapGetters({}
+      'history'
+    ])
   },
   watch: {
-    managername (newValue) {
-      console.log('managername watched', newValue)
-      this.refreshCalendar()
-    },
-    completedDate(date) {
-
-      // update history list
-      if (date) {
-        // update calendar
-        this.history.push(this.getDisplayDate(new Date(date)))
-        
-        // save new date
-        this.storeHistory().then(({data}) => {
-          this.$emit('saved', data)
-        })
-        
-      }
-    },
     history () {
       this.weeks = this.weeks.map(week => {
         return week.map(day => {
@@ -135,28 +91,6 @@ export default {
     }
   },
   methods: {
-    storeHistory () {
-      return this.$http.put(this.mydbpath+'.json', this.history)
-    },
-    loadHistory () {
-      return this.$http.get(this.mydbpath+'.json')
-    },
-    setHistory ({data: response, error: error}) {
-      return new Promise((resolve, reject) => {
-        if (error) {
-          reject(error)
-        } else {
-          let localStorageHistory = localStorage.history || ''
-          let databaseHistory = response || []
-          this.history = databaseHistory.concat(localStorageHistory.split('|'))
-            .filter(v => !!v && v!='undefined') // 텍스트예외
-            .filter((v, i, a) => a.indexOf(v) === i)  //  중복제거
-            .sort((a, b) => b.localeCompare(a)) // 역순 정렬
-
-          resolve()
-        }
-      })
-    },
     setCalendar () {
       this.today = new Date()
       this.today.setHours(0,0,0)
@@ -180,13 +114,6 @@ export default {
           }
         })
       })
-    },
-    refreshCalendar() {
-      console.log('refresh calendar')
-      this.loadHistory()
-        .catch(console.error)
-        .then(this.setHistory)
-        .then(this.setCalendar)
     },
     getDisplayDate(date) {
       return date ? `${date.getFullYear()}-${(date.getMonth()+1+'').padStart(2, '0')}-${(date.getDate()+'').padStart(2, '0')}` : ''
