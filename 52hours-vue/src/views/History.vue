@@ -1,7 +1,7 @@
 <template>
   <v-content>
       <v-container>
-        <history-calendar />
+        <history-calendar/>
       </v-container>
   </v-content>
 </template>

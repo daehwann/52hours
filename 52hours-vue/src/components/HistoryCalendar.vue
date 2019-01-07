@@ -5,6 +5,7 @@
     </v-card-title>
     <v-card-text>
       <p class="subheading">최근 4주간의 등록 이력</p>
+      <p class="subheading">저장 경로 --> {{ managername }}/{{ username }}</p>
       <v-layout row wrap my-3>
         <table>
           <thead>
@@ -67,23 +68,37 @@ export default {
       ],
       // String date Array
       // the String date formatted as "yyyy-MM-dd"
-      history:[]
+      history:[],
+      username: this.$store.state.username,
+      managername: this.$store.state.managername
     }
   },
   mounted () {
+    if (this.$store.state.newDateSubmitted) {
+      this.history.push(this.$store.state.newDateSubmitted)
+      this.storeHistory().then(this.refreshCalendar)
+      this.$store.commit('newDateSubmitted', '')
+    }
+
+    if (this.username && this.managername) {
+      this.refreshCalendar()
+    } else {
+      this.$router.push({path:'/'})
+    }
+
     
   },
   computed: {
     mydbpath() {
       return (this.managername && this.username) ? `${this.firebase.baseurl}/manager/${this.managername}/user/${this.username}` : ''
     },
-    username () {
-      return this.$store.getters.username
-    },
-    managername() {
-      console.log('managername computed')
-      return this.$store.getters.managername
-    }
+    // username () {
+    //   return this.$store.state.username
+    // },
+    // managername() {
+    //   console.log('managername computed', arguments)
+    //   return this.$store.state.managername
+    // }
   },
   watch: {
     managername (newValue) {
@@ -167,6 +182,7 @@ export default {
       })
     },
     refreshCalendar() {
+      console.log('refresh calendar')
       this.loadHistory()
         .catch(console.error)
         .then(this.setHistory)
@@ -193,11 +209,13 @@ export default {
       this.$emit('add', this.getDisplayDate(date))
 
       // window.scrollTo(0, '#app')
-      this.$vuetify.goTo('#newWorkingTime', {
-        duration: 300,
-        offset: 0,
-        easing: 'easeInOutCubic'
-      })
+      // this.$vuetify.goTo('#newWorkingTime', {
+      //   duration: 300,
+      //   offset: 0,
+      //   easing: 'easeInOutCubic'
+      // })
+      this.$store.commit('newDateFromHistory', this.getDisplayDate(date))
+      this.$router.push({path:'/'})
 
       // analytics
       window.gtag('event', 'click', {

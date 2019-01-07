@@ -160,9 +160,14 @@ export default {
   },
   
   mounted () {
-    let month = this.now.getMonth() + 1 + ''
-    let day = this.now.getDate() + ''
-    this.date = `${this.now.getFullYear()}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+    if (this.$store.state.newDateFromHistory) {
+      this.date = this.$store.state.newDateFromHistory
+      this.$store.commit('applyNewDate')
+    } else {
+      let month = this.now.getMonth() + 1 + ''
+      let day = this.now.getDate() + ''
+      this.date = `${this.now.getFullYear()}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+    }
     this.today = this.date
 
     let hour = this.now.getHours() + ''
@@ -327,6 +332,8 @@ export default {
       document.getElementById('submitresult').src = ''
       this.completed = false
       this.completeDialog = false
+
+      this.$router.push({path:'/history'})
     }
   },
   components: {
@@ -334,3 +341,18 @@ export default {
   }
 }
 </script>
+
+<style>
+[v-cloak] {
+  display: none;
+}
+iframe {
+  border: 0em;
+  width: 100%;
+  height: 100%;
+}
+
+table {
+  width: 100%;
+}
+</style>

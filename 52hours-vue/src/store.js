@@ -7,10 +7,8 @@ export default new Vuex.Store({
   state: {
     username: '',
     managername: '',
-  },
-  getters: {
-    username: state => state.username,
-    managername: state => state.managername
+    newDateFromHistory: '',
+    newDateSubmitted: '',
   },
   mutations: {
     username (state, username) {
@@ -18,7 +16,17 @@ export default new Vuex.Store({
     },
     managername (state, managername) {
       state.managername = managername
+    },
+    newDateFromHistory (state, date) {
+      state.newDateFromHistory = date
+    },
+    applyNewDate (state) {
+      state.newDateFromHistory = ''
+    },
+    newDateSubmitted (state, date) {
+      state.newDateSubmitted = date
     }
+    
   },
   actions: {
 

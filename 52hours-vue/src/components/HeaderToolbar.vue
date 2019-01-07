@@ -1,13 +1,13 @@
 <template>
   <div>
-    <v-navigation-drawer v-model="drawer" fixed left app width="200">
+    <v-navigation-drawer v-model="drawer" fixed left app >
       <v-list>
         <v-list-tile to="/">
           <v-list-tile-action>
             <v-icon>home</v-icon>
           </v-list-tile-action>
           <v-list-tile-content>
-            <v-list-tile-title class="headline">Home</v-list-tile-title>
+            <v-list-tile-title>Home</v-list-tile-title>
           </v-list-tile-content>
         </v-list-tile>
         <v-list-tile to="/history">
@@ -15,7 +15,7 @@
             <v-icon>contact_mail</v-icon>
           </v-list-tile-action>
           <v-list-tile-content>
-            <v-list-tile-title>Contact</v-list-tile-title>
+            <v-list-tile-title>History</v-list-tile-title>
           </v-list-tile-content>
         </v-list-tile>
       </v-list>
