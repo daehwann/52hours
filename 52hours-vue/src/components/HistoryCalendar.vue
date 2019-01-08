@@ -148,7 +148,7 @@ export default {
       this.$router.push({path:'/'})
 
       // analytics
-      window.gtag('event', 'click', {
+      this.$gtag && this.gtag('event', 'click', {
         'event_category': 'history',
         'event_label': this.getDisplayDate(date)
       });

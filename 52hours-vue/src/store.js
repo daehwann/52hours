@@ -55,7 +55,7 @@ export default new Vuex.Store({
       if (state.username && state.managername) {
         this._vm.$http.get(getters.dbpath+'.json')
           .then(({ data }) => {
-            commit('history', data)
+            commit('history', data || [])
           })
       }
     },

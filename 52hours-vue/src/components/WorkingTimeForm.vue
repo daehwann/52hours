@@ -42,7 +42,7 @@
             </v-flex>
             <v-flex xs6 px-3>
               <!-- End time -->
-              <time-picker name="퇴근" label-name="퇴근" v-model="endTime" :rules="inputRules.workingtime"></time-picker>
+              <time-picker name="퇴근" label-name="퇴근" v-model="endTime"></time-picker>
             </v-flex>
           </v-layout>
           <v-layout row wrap>
@@ -114,11 +114,14 @@
         </iframe>
       </v-card>
     </v-dialog>
+    <time-picker-test/>
   </v-form>
 </template>
 
 <script>
 import TimePicker from './TimePicker.vue'
+import TimePickerTest from './TimePickerTest.vue'
+
 
 export default {
   data () {
@@ -129,7 +132,6 @@ export default {
       // user
       // username: '',
       manager: '',
-      managerSelected: {},
       managerList: [
         {text:'한웅', value:'1FAIpQLSeMzqRuE3I6twzxyLZ4y2EwkJyk2NPo09a4p1LvX3AQA7-RIw'},
         {text:'정진영', value: '1FAIpQLSc8cUWGrPDHMD7X_JyxrhcqhqkPmALQOsdRR5MZuklvGpCkUA'},
@@ -256,12 +258,13 @@ export default {
         .map(m => m.text).pop() || ''
 
       localStorage.managername = name
-      //todo filter manager
+
       this.$store.commit('managername', name)
+      // this.$store.dispatch('loadHistory')
     },
     goToOriginPage () {
       // analytics
-      window.gtag('event', 'original page', {
+      this.$gtag && this.$gtag('event', 'original page', {
         'event_category': 'link',
         'event_label': this.managername
       });
@@ -273,7 +276,7 @@ export default {
       this.confirmDialog = true
 
       // analytics
-      window.gtag('event', 'check', {
+      this.$gtag && this.$gtag('event', 'check', {
         'event_category': 'form',
         'event_label': this.managername
       });
@@ -346,11 +349,23 @@ export default {
       this.submitting = true;
 
       // analytics
-      window.gtag('event', 'submit', {
-        'event_category': 'form',
-        'event_label': this.managername,
-        'value': this.breaktime
-      })
+      if (this.$gtag) {
+        this.$gtag('event', 'submit', {
+          'event_category': 'form',
+          'event_label': this.managername,
+        })
+
+        this.$gtag('event', this.managername + '-' + this.username, {
+          'event_category': (date => {
+            const year = date.getFullYear()
+            const onejan = new Date(year, 0, 1)
+            const weekOfYear = Math.ceil((((date - onejan) / 86400000) + onejan.getDay() + 1) / 7)
+            return `${year}년 ${weekOfYear}주`;
+          })(this.endDatetime),
+          'event_label': this.date,
+          'value': this.workingtime
+        })
+      }
     },
     complete () {
       this.submitting = false;
@@ -365,7 +380,8 @@ export default {
     }
   },
   components: {
-    TimePicker
+    TimePicker,
+    TimePickerTest
   }
 }
 </script>
