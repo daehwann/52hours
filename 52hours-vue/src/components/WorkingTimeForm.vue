@@ -338,7 +338,8 @@ export default {
       this.completeDialog = true
 
       // save history
-      this.completedDate = `${this.endDatetime.getFullYear()}-${this.endDatetime.getMonth()+1}-${this.endDatetime.getDate()}`
+      // this.completedDate = `${this.endDatetime.getFullYear()}-${this.endDatetime.getMonth()+1}-${this.endDatetime.getDate()}`
+      this.$store.dispatch('storeHistory', this.date)
       // this.history.push(this.date)
       // localStorage.history = this.history.join('|')
 
@@ -376,7 +377,7 @@ export default {
 iframe {
   border: 0em;
   width: 100%;
-  height: 100%;
+  height: 100vh;
 }
 
 table {

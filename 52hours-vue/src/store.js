@@ -59,10 +59,11 @@ export default new Vuex.Store({
           })
       }
     },
-    storeHistory ({ getters }) {
-      this.$http.put(getters.dbpath+'.json')
+    storeHistory ({ commit, getters }, newDate) {
+      commit('addHistory', newDate)
+      this._vm.$http.put(getters.dbpath+'.json', getters.history)
         .then(() => {
-          console.log('Hisotyr')
+          console.log('History Stored')
         })
     }
   }

@@ -25,7 +25,7 @@
                   {{getMMDD(day.date)}}
                   <v-icon disabled>check_circle_outline</v-icon><br>
                 </span>
-                <span v-else-if="day && day.type === 'NODATA'"  class="caption" @click="addNewDate(day.date)">
+                <span v-else-if="day && day.type === 'NODATA'"  class="caption add-date" @click="addNewDate(day.date)" >
                   {{getMMDD(day.date)}}
                   <v-icon color="primary">add_circle</v-icon><br>
                 </span>
@@ -157,3 +157,9 @@ export default {
     
 }
 </script>
+
+<style scoped>
+span.add-date {
+  cursor: pointer;
+}
+</style>
