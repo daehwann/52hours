@@ -37,7 +37,7 @@ export default new Vuex.Store({
     addHistory (state, date) {
       state.history.push(date)
     },
-    history (state, list) {
+    history (state, list) { 
       state.history = list
     },
     newDateFromHistory (state, date) {

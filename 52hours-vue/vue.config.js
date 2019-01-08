@@ -1,5 +1,5 @@
 module.exports = {
-  baseUrl: '/52hours-vue/',
+  baseUrl: process.env.NODE_ENV === 'production' ? '/' : '/52hours-vue/',
   outputDir: undefined,
   assetsDir: undefined,
   runtimeCompiler: undefined,
