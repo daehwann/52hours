@@ -20,13 +20,24 @@ import {version} from '../package.json'
 import HeaderToolbar from './components/HeaderToolbar.vue'
 
 export default {
-  components: {
-    HeaderToolbar
-  },
+  
   data () {
     return {
       version: version
     }
+  },
+  created () {
+    this.$store.commit('init', {
+      username: localStorage.username, 
+      managername: localStorage.managername
+    })
+  },
+  mounted () {
+    
+  },
+  components: {
+    HeaderToolbar
   }
+
 }
 </script>

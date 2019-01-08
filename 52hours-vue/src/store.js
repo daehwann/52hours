@@ -24,6 +24,10 @@ export default new Vuex.Store({
     }
   },
   mutations: {
+    init (state, {username, managername}) {
+      state.username = username
+      state.managername = managername
+    },
     username (state, username) {
       state.username = username
     },
@@ -49,7 +53,7 @@ export default new Vuex.Store({
   actions: {
     loadHistory ({ commit, state, getters}) {
       if (state.username && state.managername) {
-        this.$http.get(getters.dbpath+'.json')
+        this._vm.$http.get(getters.dbpath+'.json')
           .then(({ data }) => {
             commit('history', data)
           })

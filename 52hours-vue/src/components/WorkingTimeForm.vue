@@ -8,13 +8,21 @@
         <v-layout row wrap justify-space-between>
           <v-flex sm6 xs12 px-3>
             <!-- Username -->
-            <v-text-field v-model="username" prepend-icon="person" name="username" :rules="inputRules.username"
+            <v-text-field 
+              v-model="username" prepend-icon="person" name="username" 
+              :rules="inputRules.username"
+              @change="usernameChanged"
               label="이름" id="username" required></v-text-field>
           </v-flex>
           <v-flex sm6 xs12 px-3>
             <!-- Manager -->
-            <v-select v-model="manager" dense prepend-icon="people" name="manager" :rules="inputRules.manager"
-              :items="managerList" label="매니저" required></v-select>
+            <v-select  dense prepend-icon="people" name="manager" 
+              v-model="manager"
+              :rules="inputRules.manager"
+              :items="managerList"
+              label="매니저" 
+              @change="managernameChanged"
+              required></v-select>
           </v-flex>
         </v-layout>
 
@@ -119,8 +127,9 @@ export default {
       drawer: false,
   
       // user
-      username: '',
+      // username: '',
       manager: '',
+      managerSelected: {},
       managerList: [
         {text:'한웅', value:'1FAIpQLSeMzqRuE3I6twzxyLZ4y2EwkJyk2NPo09a4p1LvX3AQA7-RIw'},
         {text:'정진영', value: '1FAIpQLSc8cUWGrPDHMD7X_JyxrhcqhqkPmALQOsdRR5MZuklvGpCkUA'},
@@ -160,6 +169,7 @@ export default {
   },
   
   mounted () {
+    // set date
     if (this.$store.state.newDateFromHistory) {
       this.date = this.$store.state.newDateFromHistory
       this.$store.commit('applyNewDate')
@@ -169,36 +179,40 @@ export default {
       this.date = `${this.now.getFullYear()}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
     }
     this.today = this.date
-
     let hour = this.now.getHours() + ''
     let min = this.now.getMinutes() + ''
     this.endTime = `${hour.padStart(2, '0')}:${min.padStart(2, '0')}`
 
-    if (localStorage.username) {
-      this.username = localStorage.username
-    }
-
-    if (localStorage.manager) {
-      this.manager =  localStorage.manager
-    }
+    // set manager
+    this.manager = this.managerList
+        .filter(m => m.text === this.managername)
+        .map(m => m.value).pop() || ''
   },
   watch: {
-    username(newValue) {
-      localStorage.username = newValue
-      this.$store.commit('username', newValue)
-    },
-    manager(newValue) {
-      localStorage.manager = newValue
-      this.$store.commit('managername', this.managername)
-    }
+    // username(newValue) {
+    //   localStorage.username = newValue
+    //   this.$store.commit('username', newValue)
+    // },
+    // managername(name) {
+    //   this.manager = this.managerList
+    //     .filter(m => m.text === name)
+    //     .map(m => m.value).pop() || ''
+
+    //   // localStorage.managername = managername
+    //   // //todo filter manager
+    //   // this.$store.commit('managername', managername)
+    // }
   },
   computed: {
-    managername () {
-      return this.managerList
-        .filter(m => m.value == this.manager)
-        .map(m => m.text)
-        .pop() || ''
+    username () {
+      return this.$store.state.username
     },
+    managername () {
+      return this.$store.state.managername
+    },
+    // manager () {
+    //   return (this.managerList.find(m => m.text == this.managername) || {manager:''}).manager
+    // },
     teamResponseURL() {
       return `https://docs.google.com/forms/d/e/${this.manager}/formResponse`
     },
@@ -232,6 +246,19 @@ export default {
     }
   },
   methods: {
+    usernameChanged (name) {
+      localStorage.username = name
+      this.$store.commit('username', name)
+    },
+    managernameChanged (managerID) {
+      let name = this.managerList
+        .filter(m => m.value === managerID)
+        .map(m => m.text).pop() || ''
+
+      localStorage.managername = name
+      //todo filter manager
+      this.$store.commit('managername', name)
+    },
     goToOriginPage () {
       // analytics
       window.gtag('event', 'original page', {

@@ -5,7 +5,6 @@
     </v-card-title>
     <v-card-text>
       <p class="subheading">최근 4주간의 등록 이력</p>
-      <p class="subheading">저장 경로 --> {{ managername }}/{{ username }}</p>
       <v-layout row wrap my-3>
         <table>
           <thead>
@@ -45,7 +44,7 @@
 </template>
 
 <script>
-import mapGetters from 'vuex'
+// import mapGetters from 'vuex'
 
 export default {
   data () {
@@ -63,16 +62,20 @@ export default {
     }
   },
   mounted () {
-    if (this.username && this.managername) {
-      this.$store.dispatch('loadHistory')
-    } else {
-      this.$router.push({path:'/'})
-    }
+    this.setCalendar()
+    this.$store.dispatch('loadHistory')
+
+    // this.$router.push({path:'/'})
+
   },
+  
   computed: {
-    ...mapGetters({}
-      'history'
-    ])
+    abc () {
+      return 'b'
+    },
+    history () {
+      return this.$store.getters.history
+    }
   },
   watch: {
     history () {
