@@ -1,10 +1,21 @@
 <template>
   <v-card>
     <v-card-title primary-title>
-      <h3 class="title">History</h3>
+      <h3 class="title">근무 시간 입력 이력</h3>
+      <v-spacer></v-spacer>
+      <v-progress-circular
+        v-if="progress"
+        :size="40"
+        indeterminate
+        color="primary"
+      ><span class="caption">Sync</span></v-progress-circular>
+      
+      <v-spacer></v-spacer>
     </v-card-title>
     <v-card-text>
-      <p class="subheading">최근 4주간의 등록 이력</p>
+      <v-layout row wrap>
+        <p class="caption">최근 4주간의 등록 이력 (<i>매니저 - 사용자</i> 기준으로 저장)</p>
+      </v-layout>
       <v-layout row wrap my-3>
         <table>
           <thead>
@@ -70,11 +81,11 @@ export default {
   },
   
   computed: {
-    abc () {
-      return 'b'
-    },
     history () {
       return this.$store.getters.history
+    },
+    progress () {
+      return this.$store.state.historyProgress
     }
   },
   watch: {

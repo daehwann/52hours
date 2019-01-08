@@ -2,11 +2,19 @@
   <v-form>
     <v-card id="newWorkingTime">
       <v-card-title primary-title>
-        <h3 class="title">New Working Time</h3>
+        <h3 class="title">근무 시간 입력</h3>
+        <v-spacer></v-spacer>
+        <v-btn flat :disabled="!manager" :href="teamOriginalFormURL" @click="goToOriginPage()" target="_blank" class="caption">
+            {{ managername }}팀 기존 양식
+          <v-icon>link{{ !managername ? '_off' : ''}}</v-icon>
+        </v-btn>
       </v-card-title>
       <v-card-text>
-        <v-layout row wrap justify-space-between>
-          <v-flex sm6 xs12 px-3>
+        <v-layout row wrap>
+          <p class="caption"><i>사용자이름</i> 과 <i>매니저이름</i> 은 처음 입력 후 브라우저에 저장됩니다</p>
+        </v-layout>
+        <v-layout row wrap justify-space-between my-2>
+          <v-flex xs6 px-3>
             <!-- Username -->
             <v-text-field 
               v-model="username" prepend-icon="person" name="username" 
@@ -14,7 +22,7 @@
               @change="usernameChanged"
               label="이름" id="username" required></v-text-field>
           </v-flex>
-          <v-flex sm6 xs12 px-3>
+          <v-flex xs6 px-3>
             <!-- Manager -->
             <v-select  dense prepend-icon="people" name="manager" 
               v-model="manager"
@@ -27,7 +35,7 @@
         </v-layout>
 
         <v-layout row wrap>
-          <v-flex xs6 px-3>
+          <v-flex xs6 px-3 my-2>
             <!-- Date -->
             <v-menu ref="menu1" :close-on-content-click="false" v-model="menu1" :nudge-right="40" lazy
               transition="scale-transition" offset-y full-width max-width="290px" min-width="290px">
@@ -35,17 +43,23 @@
               <v-date-picker v-model="date" :show-current="today" no-title @input="menu1 = false"></v-date-picker>
             </v-menu>
           </v-flex>
-          <v-layout row wrap>
+          <v-layout row wrap my-2>
             <v-flex xs6 px-3>
               <!-- Start time -->
               <time-picker name="출근" label-name="출근" v-model="startTime"></time-picker>
+              <!-- <v-menu ref="menu" :close-on-content-click="false" v-model="timemodal1" :nudge-right="40" :return-value.sync="startTime"
+                lazy transition="scale-transition" offset-y full-width max-width="290px" min-width="290px">
+                <v-text-field slot="activator" v-model="startTime" label="출근" prepend-icon="access_time" 
+                    readonly></v-text-field>
+                <v-time-picker v-if="timemodal1" v-model="startTime" full-width @change="$refs.menu.save(startTime)"></v-time-picker>
+              </v-menu> -->
             </v-flex>
             <v-flex xs6 px-3>
               <!-- End time -->
               <time-picker name="퇴근" label-name="퇴근" v-model="endTime"></time-picker>
             </v-flex>
           </v-layout>
-          <v-layout row wrap>
+          <v-layout row wrap my-2>
             <!-- Breaktime -->
             <v-flex xs6 sm4 px-3>
               <v-text-field
@@ -58,7 +72,7 @@
                 hint="점심시간 제외"
               ></v-text-field>
             </v-flex>
-            <v-flex xs6 sm8 pl-3>
+            <v-flex xs6 sm8 pr-3>
               <v-slider label-name="휴식시간" ticks step="10" v-model="breaktimeMinute" min="0" max="120"></v-slider>
             </v-flex>
           </v-layout>
@@ -114,14 +128,11 @@
         </iframe>
       </v-card>
     </v-dialog>
-    <time-picker-test/>
   </v-form>
 </template>
 
 <script>
 import TimePicker from './TimePicker.vue'
-import TimePickerTest from './TimePickerTest.vue'
-
 
 export default {
   data () {
@@ -341,10 +352,7 @@ export default {
       this.completeDialog = true
 
       // save history
-      // this.completedDate = `${this.endDatetime.getFullYear()}-${this.endDatetime.getMonth()+1}-${this.endDatetime.getDate()}`
       this.$store.dispatch('storeHistory', this.date)
-      // this.history.push(this.date)
-      // localStorage.history = this.history.join('|')
 
       this.submitting = true;
 
@@ -363,7 +371,12 @@ export default {
             return `${year}년 ${weekOfYear}주`;
           })(this.endDatetime),
           'event_label': this.date,
-          'value': this.workingtime
+          'value': this.workingtime,
+          'username': this.username,
+          'managername': this.managername,
+          'regulartime': this.workingtime >= 8 ? 8 : 4,
+          'overtime': this.workingtime - (this.workingtime >= 8 ? 8 : 4),
+          'breaktime': this.breaktimeMinute > 0 ? Math.floor(this.breaktimeMinute / 60) : 0
         })
       }
     },
@@ -381,7 +394,6 @@ export default {
   },
   components: {
     TimePicker,
-    TimePickerTest
   }
 }
 </script>

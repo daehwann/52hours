@@ -41,7 +41,15 @@
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
-        gtag('config', 'UA-131329692-1');
+        gtag('config', 'UA-131329692-1', {
+          'custom_map': {
+            dimension1: 'username',
+            dimension2: 'managername',
+            metric1: 'regulartime',
+            metric2: 'overtime',
+            metric3: 'breaktime'
+          }
+        });
       </script>
 
       <!-- Rollbar for Error Handling -->

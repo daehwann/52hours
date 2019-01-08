@@ -8,6 +8,7 @@ export default new Vuex.Store({
     username: '',
     managername: '',
     history: [],
+    historyProgress: false,
     newDateFromHistory: '',
     newDateSubmitted: '',
     dburl: 'https://cnx-go-home.firebaseio.com'
@@ -53,9 +54,13 @@ export default new Vuex.Store({
   actions: {
     loadHistory ({ commit, state, getters}) {
       if (state.username && state.managername) {
+        state.historyProgress = true
         this._vm.$http.get(getters.dbpath+'.json')
           .then(({ data }) => {
-            commit('history', data || [])
+            
+            const list = (localStorage.history||'').split('|').concat(data||[])
+            commit('history', list || [])
+            state.historyProgress = false
           })
       }
     },
