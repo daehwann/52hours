@@ -271,7 +271,7 @@ export default {
       localStorage.managername = name
 
       this.$store.commit('managername', name)
-      // this.$store.dispatch('loadHistory')
+      this.$store.dispatch('loadHistory')
     },
     goToOriginPage () {
       // analytics
