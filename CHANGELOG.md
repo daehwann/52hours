@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Update and improvement of Polish translation from [@daehwann](https://github.com/daehwann/52hours).
 
+## [0.5.2] - 2019-01-09
+### Changed
+- 메뉴 구조 변경
+- 아이콘 변경
+
 ## [0.5.1] - 2019-01-09
 ### Added
 - 히스토리페이지에 사용자, 매니저 정보가 없을시 알럿후 페이지 이동

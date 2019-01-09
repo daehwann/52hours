@@ -2,15 +2,9 @@
   <div>
     <v-card>
       <v-card-title primary-title>
-        <h3 class="title">근무 시간 입력 이력</h3>
+        <h3 class="title">전송 이력</h3>
         <v-spacer></v-spacer>
-        <v-progress-circular
-          v-if="progress"
-          :size="40"
-          indeterminate
-          color="primary"
-        ><span class="caption">Sync</span></v-progress-circular>
-        
+        <v-btn flat :loading="progress" />
         <v-spacer></v-spacer>
       </v-card-title>
       <v-card-text>

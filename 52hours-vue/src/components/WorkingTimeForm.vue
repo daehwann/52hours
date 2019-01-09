@@ -1,8 +1,8 @@
 <template>
-  <v-form>
+  <div>
     <v-card id="newWorkingTime">
       <v-card-title primary-title>
-        <h3 class="title">근무 시간 입력</h3>
+        <h3 class="title">시간 입력</h3>
         <v-spacer></v-spacer>
         <v-btn flat :disabled="!manager" :href="teamOriginalFormURL" @click="goToOriginPage()" target="_blank" class="caption">
             {{ managername }}팀 기존 양식
@@ -13,70 +13,73 @@
         <v-layout row wrap>
           <p class="caption"><i>사용자이름</i> 과 <i>매니저이름</i> 은 처음 입력 후 브라우저에 저장됩니다</p>
         </v-layout>
-        <v-layout row wrap justify-space-between my-2>
-          <v-flex xs6 px-3>
-            <!-- Username -->
-            <v-text-field 
-              v-model="username" prepend-icon="person" name="username" 
-              :rules="inputRules.username"
-              @change="usernameChanged"
-              label="이름" id="username" required></v-text-field>
-          </v-flex>
-          <v-flex xs6 px-3>
-            <!-- Manager -->
-            <v-select  dense prepend-icon="people" name="manager" 
-              v-model="manager"
-              :rules="inputRules.manager"
-              :items="managerList"
-              label="매니저" 
-              @change="managernameChanged"
-              required></v-select>
-          </v-flex>
-        </v-layout>
 
-        <v-layout row wrap>
-          <v-flex xs6 px-3 my-2>
-            <!-- Date -->
-            <v-menu ref="menu1" :close-on-content-click="false" v-model="menu1" :nudge-right="40" lazy
-              transition="scale-transition" offset-y full-width max-width="290px" min-width="290px">
-              <v-text-field readonly slot="activator" v-model="date" label="날짜" persistent-hint prepend-icon="event"></v-text-field>
-              <v-date-picker v-model="date" :show-current="today" no-title @input="menu1 = false"></v-date-picker>
-            </v-menu>
-          </v-flex>
-          <v-layout row wrap my-2>
+        <v-form>
+          <v-layout row wrap justify-space-between my-1>
             <v-flex xs6 px-3>
-              <!-- Start time -->
-              <time-picker name="출근" label-name="출근" v-model="startTime"></time-picker>
-              <!-- <v-menu ref="menu" :close-on-content-click="false" v-model="timemodal1" :nudge-right="40" :return-value.sync="startTime"
-                lazy transition="scale-transition" offset-y full-width max-width="290px" min-width="290px">
-                <v-text-field slot="activator" v-model="startTime" label="출근" prepend-icon="access_time" 
-                    readonly></v-text-field>
-                <v-time-picker v-if="timemodal1" v-model="startTime" full-width @change="$refs.menu.save(startTime)"></v-time-picker>
-              </v-menu> -->
+              <!-- Username -->
+              <v-text-field 
+                v-model="username" prepend-icon="person" name="username" 
+                :rules="inputRules.username"
+                @change="usernameChanged"
+                label="이름" id="username" required></v-text-field>
             </v-flex>
             <v-flex xs6 px-3>
-              <!-- End time -->
-              <time-picker name="퇴근" label-name="퇴근" v-model="endTime"></time-picker>
+              <!-- Manager -->
+              <v-select  dense prepend-icon="people" name="manager" 
+                v-model="manager"
+                :rules="inputRules.manager"
+                :items="managerList"
+                label="매니저" 
+                @change="managernameChanged"
+                required></v-select>
             </v-flex>
           </v-layout>
-          <v-layout row wrap my-2>
-            <!-- Breaktime -->
-            <v-flex xs6 sm4 px-3>
-              <v-text-field
-                prepend-icon="free_breakfast"
-                readonly
-                name="breaktimeDisplay"
-                label="휴식"
-                v-model="breaktimeDisplay"
-                persistent-hint
-                hint="점심시간 제외"
-              ></v-text-field>
+
+          <v-layout row wrap>
+            <v-flex xs6 px-3 my-1>
+              <!-- Date -->
+              <v-menu ref="menu1" :close-on-content-click="false" v-model="menu1" :nudge-right="40" lazy
+                transition="scale-transition" offset-y full-width max-width="290px" min-width="290px">
+                <v-text-field readonly slot="activator" v-model="date" label="날짜" persistent-hint prepend-icon="event"></v-text-field>
+                <v-date-picker v-model="date" :show-current="today" no-title @input="menu1 = false"></v-date-picker>
+              </v-menu>
             </v-flex>
-            <v-flex xs6 sm8 pr-3>
-              <v-slider label-name="휴식시간" ticks step="10" v-model="breaktimeMinute" min="0" max="120"></v-slider>
-            </v-flex>
+            <v-layout row wrap my-1>
+              <v-flex xs6 px-3>
+                <!-- Start time -->
+                <time-picker name="출근" label-name="출근" v-model="startTime"></time-picker>
+                <!-- <v-menu ref="menu" :close-on-content-click="false" v-model="timemodal1" :nudge-right="40" :return-value.sync="startTime"
+                  lazy transition="scale-transition" offset-y full-width max-width="290px" min-width="290px">
+                  <v-text-field slot="activator" v-model="startTime" label="출근" prepend-icon="access_time" 
+                      readonly></v-text-field>
+                  <v-time-picker v-if="timemodal1" v-model="startTime" full-width @change="$refs.menu.save(startTime)"></v-time-picker>
+                </v-menu> -->
+              </v-flex>
+              <v-flex xs6 px-3>
+                <!-- End time -->
+                <time-picker name="퇴근" label-name="퇴근" v-model="endTime"></time-picker>
+              </v-flex>
+            </v-layout>
+            <v-layout row wrap my-1>
+              <!-- Breaktime -->
+              <v-flex xs6 sm4 px-3>
+                <v-text-field
+                  prepend-icon="free_breakfast"
+                  readonly
+                  name="breaktimeDisplay"
+                  label="휴식"
+                  v-model="breaktimeDisplay"
+                  persistent-hint
+                  hint="점심시간 제외"
+                ></v-text-field>
+              </v-flex>
+              <v-flex xs6 sm8 pr-3>
+                <v-slider label-name="휴식시간" ticks step="10" v-model="breaktimeMinute" min="0" max="120"></v-slider>
+              </v-flex>
+            </v-layout>
           </v-layout>
-        </v-layout>
+        </v-form>
       </v-card-text>
       <v-card-actions>
         <v-layout row wrap my-3>
@@ -128,7 +131,7 @@
         </iframe>
       </v-card>
     </v-dialog>
-  </v-form>
+  </div>
 </template>
 
 <script>

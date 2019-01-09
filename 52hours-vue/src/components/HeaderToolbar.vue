@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-navigation-drawer v-model="drawer" fixed left app >
+    <v-navigation-drawer v-if="false" v-model="drawer" fixed left app >
       <v-list>
         <v-list-tile to="/">
           <v-list-tile-action>
@@ -12,7 +12,7 @@
         </v-list-tile>
         <v-list-tile to="/history">
           <v-list-tile-action>
-            <v-icon>contact_mail</v-icon>
+            <v-icon>history</v-icon>
           </v-list-tile-action>
           <v-list-tile-content>
             <v-list-tile-title>History</v-list-tile-title>
@@ -20,18 +20,26 @@
         </v-list-tile>
       </v-list>
     </v-navigation-drawer>
-    <v-toolbar primary fixed app>
-      <v-toolbar-side-icon @click="drawer = !drawer"></v-toolbar-side-icon>
-      <v-toolbar-title>CNX 52Hours</v-toolbar-title>
-      
+    <v-toolbar dense primary fixed app extended>
+      <!-- <v-toolbar-side-icon @click="drawer = !drawer"></v-toolbar-side-icon> -->
       <v-spacer></v-spacer>
-
+      <v-toolbar-title>CNX 52Hours</v-toolbar-title>
+      <v-spacer></v-spacer>
+      <v-tabs fixed-tabs color="transparent" slot="extension">
+        <v-tab to="/">
+          <v-icon left>web</v-icon><span>Form</span>
+        </v-tab>
+        <v-tab to="/history">
+          <v-icon left>date_range</v-icon><span>History</span>
+        </v-tab>
+      </v-tabs>
       <!-- <v-toolbar-items>
         <v-btn flat :disabled="!manager" :href="teamOriginalFormURL" @click="goToOriginPage()" target="_blank" class="caption">
             {{ managerName }} 팀 기존 페이지로 가기
           <v-icon>link{{ !managerName ? '_off' : ''}}</v-icon>
         </v-btn>
       </v-toolbar-items> -->
+      
     </v-toolbar>
   </div>
 </template>
