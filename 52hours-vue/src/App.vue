@@ -1,31 +1,65 @@
 <template>
-  <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div>
-    <router-view/>
-  </div>
+  <v-app id="app">
+    <!-- Header -->
+    <header-toolbar/>
+
+    <!-- Contents -->
+    <transition name="slide-fade" mode="out-in">
+      <router-view></router-view>
+    </transition>
+    
+    <!-- Footer -->
+    <v-footer app inset height="50">
+      <div class="pa-4">52hours v{{ version }}</div>
+      <v-spacer></v-spacer>
+      <div class="pa-4"> &copy; {{ new Date().getFullYear() }}</div>
+    </v-footer>
+  </v-app>
 </template>
 
+<script>
+import {version} from '../package.json'
+import HeaderToolbar from './components/HeaderToolbar.vue'
+
+export default {
+  
+  data () {
+    return {
+      version: version,
+      transitionName: ''
+    }
+  },
+  created () {
+    this.$store.commit('init', {
+      username: localStorage.username, 
+      managername: localStorage.managername
+    })
+  },
+  watch: {
+    '$route' (to, from) {
+      const toDepth = to.path.split('/').length
+      const fromDepth = from.path.split('/').length
+      this.transitionName = toDepth < fromDepth ? 'slide-right' : 'slide-left'
+    }
+  },
+  components: {
+    HeaderToolbar
+  }
+
+}
+</script>
+
 <style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
+.slide-fade-enter-active {
+  transition: all .3s ease;
 }
-#nav {
-  padding: 30px;
+.slide-fade-leave-active {
+  transition: all .3s cubic-bezier(1.0, 0.5, 0.8, 1.0);
 }
-
-#nav a {
-  font-weight: bold;
-  color: #2c3e50;
-}
-
-#nav a.router-link-exact-active {
-  color: #42b983;
+.slide-fade-enter, .slide-fade-leave-to
+/* .slide-fade-leave-active below version 2.1.8 */ {
+  transform: translateX(10px);
+  opacity: 0;
 }
 </style>
+
