@@ -45,40 +45,45 @@
                 <v-date-picker v-model="date" :show-current="today" no-title @input="menu1 = false"></v-date-picker>
               </v-menu>
             </v-flex>
-            <v-layout row wrap my-1>
-              <v-flex xs6 px-3>
-                <!-- Start time -->
-                <time-picker name="출근" label-name="출근" v-model="startTime"></time-picker>
-                <!-- <v-menu ref="menu" :close-on-content-click="false" v-model="timemodal1" :nudge-right="40" :return-value.sync="startTime"
-                  lazy transition="scale-transition" offset-y full-width max-width="290px" min-width="290px">
-                  <v-text-field slot="activator" v-model="startTime" label="출근" prepend-icon="access_time" 
-                      readonly></v-text-field>
-                  <v-time-picker v-if="timemodal1" v-model="startTime" full-width @change="$refs.menu.save(startTime)"></v-time-picker>
-                </v-menu> -->
-              </v-flex>
-              <v-flex xs6 px-3>
-                <!-- End time -->
-                <time-picker name="퇴근" label-name="퇴근" v-model="endTime"></time-picker>
-              </v-flex>
-            </v-layout>
-            <v-layout row wrap my-1>
-              <!-- Breaktime -->
-              <v-flex xs6 sm4 px-3>
-                <v-text-field
-                  prepend-icon="free_breakfast"
-                  readonly
-                  name="breaktimeDisplay"
-                  label="휴식"
-                  v-model="breaktimeDisplay"
-                  persistent-hint
-                  hint="점심시간 제외"
-                ></v-text-field>
-              </v-flex>
-              <v-flex xs6 sm8 pr-3>
-                <v-slider label-name="휴식시간" ticks step="10" v-model="breaktimeMinute" min="0" max="120"></v-slider>
-              </v-flex>
-            </v-layout>
+            <v-flex xs6 px-3 my-1>
+              <!-- 반차 여부 -->
+              <v-checkbox label="반차여부" v-model="halftime"></v-checkbox>
+            </v-flex>
           </v-layout>
+          <v-layout row wrap my-1>
+            <v-flex xs6 px-3>
+              <!-- Start time -->
+              <time-picker name="출근" label-name="출근" v-model="startTime"></time-picker>
+              <!-- <v-menu ref="menu" :close-on-content-click="false" v-model="timemodal1" :nudge-right="40" :return-value.sync="startTime"
+                lazy transition="scale-transition" offset-y full-width max-width="290px" min-width="290px">
+                <v-text-field slot="activator" v-model="startTime" label="출근" prepend-icon="access_time" 
+                    readonly></v-text-field>
+                <v-time-picker v-if="timemodal1" v-model="startTime" full-width @change="$refs.menu.save(startTime)"></v-time-picker>
+              </v-menu> -->
+            </v-flex>
+            <v-flex xs6 px-3>
+              <!-- End time -->
+              <time-picker name="퇴근" label-name="퇴근" v-model="endTime"></time-picker>
+            </v-flex>
+          </v-layout>
+          <v-layout row wrap my-1>
+            <!-- Breaktime -->
+            <v-flex xs6 sm4 px-3>
+              <v-text-field
+                prepend-icon="free_breakfast"
+                readonly
+                name="breaktimeDisplay"
+                label="휴식"
+                :value="displayHour(breaktimeMinutes)"
+                persistent-hint
+                hint="점심시간 제외"
+              ></v-text-field>
+            </v-flex>
+            <v-flex xs6 sm8 pr-3>
+              <v-slider label-name="휴식시간" ticks step="10" v-model="breaktimeMinutes" min="0" max="120"></v-slider>
+            </v-flex>
+          </v-layout>
+          
         </v-form>
       </v-card-text>
       <v-card-actions>
@@ -92,15 +97,27 @@
     </v-card>
 
     <!-- Dialogs-->
-    <v-dialog v-model="confirmDialog" max-width="290">
+    <v-dialog v-if="confirmDialog" v-model="confirmDialog" max-width="290">
       <v-card>
         <v-card-title class="title">제출 하시겠습니까?</v-card-title>
         <v-card-text class="text-xs-center">
           <p class="body-2">{{ date }}</p>
           <p class="body-2">{{ startTime }} ~ {{ endTime }}</p>
-          <p class="body-2">근무시간: {{ workingtime }}h</p>
-          <p class="body-2">휴식시간: {{ breaktimeDisplay }}</p>
-          <p class="body-2">초과시간: {{ overtime }}h</p>
+          <!-- <p class="body-2">표준근무: {{ regularMinutes }}h </p>
+          <p class="body-2">초과시간: {{ displayHour(overtimeMinutes) }}h</p>
+          <p class="body-2">휴식시간: {{ displayHour(breaktimeMinutes) }}</p>
+          <p class="body-2">최종근무시간: {{ displayHour(workingMinutes) }}</p> -->
+          <v-data-table
+            :items="[{name:'시간1', text:'3h 12m'},{name:'시간2', text:'2h 0m'}]"
+            class="elevation-1"
+            hide-actions
+            hide-headers
+          >
+            <template slot="items" slot-scope="props">
+              <td>{{ props.item.name }}</td>
+              <td>{{ props.item.text }}</td>
+            </template>
+          </v-data-table>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -113,7 +130,7 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <v-dialog v-model="completeDialog" fullscreen hide-overlay transition="dialog-bottom-transition">
+    <v-dialog v-if="completeDialog" v-model="completeDialog" fullscreen hide-overlay transition="dialog-bottom-transition">
       <v-card>
         <v-toolbar primary>
           <v-progress-circular v-show="submitting" :width="4" indeterminate color="primary"></v-progress-circular>
@@ -166,8 +183,9 @@ export default {
       startTime: '09:00',
       endTime: '',
       menu1: false, // for date picker
-      breaktimeMinute: 0,
-      
+      breaktimeMinutes: 0,
+      halftime: false,
+
       // validations
       inputRules: {
         manager: [ (v) => !!v || '소속을 선택하세요.'],
@@ -205,19 +223,6 @@ export default {
         .map(m => m.value).pop() || ''
   },
   watch: {
-    // username(newValue) {
-    //   localStorage.username = newValue
-    //   this.$store.commit('username', newValue)
-    // },
-    // managername(name) {
-    //   this.manager = this.managerList
-    //     .filter(m => m.text === name)
-    //     .map(m => m.value).pop() || ''
-
-    //   // localStorage.managername = managername
-    //   // //todo filter manager
-    //   // this.$store.commit('managername', managername)
-    // }
   },
   computed: {
     username () {
@@ -244,21 +249,21 @@ export default {
     endDatetime () {
       return new Date(`${this.date}T${this.endTime}+09:00`)
     },
-    standardDatetime () {
-      return new Date(`${this.date}T18:00:00+09:00`)
+
+    // officeMinutes = endDatetime - startDatetime
+    // workingMinutes = officeMinutes - lunchHour - breaktimeHour
+    // overtimeMinutes = workingMinutes - regularMinutes
+    officeMinutes () {
+      return Math.floor( (this.endDatetime - this.startDatetime) / 1000 / 60)
     },
-    overtime () {
-      return this.workingtime < 8 ? 0 : this.gapHours(this.standardDatetime, this.endDatetime)
+    workingMinutes () {
+      return this.officeMinutes - (/* lunchtime */this.halftime ? 0 : 60) - (this.breaktimeMinutes)
     },
-    breaktimeDisplay () {
-      if (this.breaktimeMinute == 0) {
-        return '0h 0m'
-      } else {
-        return `${Math.floor(this.breaktimeMinute / 60)}h ${this.breaktimeMinute % 60}m`
-      }
+    regularMinutes () {
+      return this.halftime ? 4 : 8
     },
-    workingtime () {
-      return this.gapHours(this.startDatetime, this.endDatetime)-1
+    overtimeMinutes () {
+      return this.workingMinutes - this.regularMinutes
     }
   },
   methods: {
@@ -283,8 +288,8 @@ export default {
         'event_label': this.managername
       });
     },
-    gapHours (start, end) {
-      return Math.floor( (end - start) / 1000 / 60 / 60)
+    displayHour (min) {
+      return min ? `${Math.floor(min / 60)}h ${min % 60}m` : '0h 0m'
     },
     check() {
       this.confirmDialog = true
@@ -336,8 +341,8 @@ export default {
           'entry.2119704746_minute': this.startDatetime.getMinutes(),
           'entry.680657899_hour': this.endDatetime.getHours(),
           'entry.680657899_minute': this.endDatetime.getMinutes(),
-          'entry.1760268447_hour': this.breaktimeMinute > 0 ? Math.floor(this.breaktimeMinute / 60) : 0,
-          'entry.1760268447_minute': this.breaktimeMinute % 60,
+          'entry.1760268447_hour': this.breaktimeMinutes > 0 ? Math.floor(this.breaktimeMinutes / 60) : 0,
+          'entry.1760268447_minute': this.breaktimeMinutes % 60,
           fvv: 1,
           pageHistory: 0
         }
@@ -374,12 +379,12 @@ export default {
             return `${year}년 ${weekOfYear}주`;
           })(this.endDatetime),
           'event_label': this.date,
-          'value': this.workingtime,
+          'value': this.workingMinutes,
           'username': this.username,
           'managername': this.managername,
-          'regulartime': this.workingtime >= 8 ? 8 : 4,
-          'overtime': this.workingtime - (this.workingtime >= 8 ? 8 : 4),
-          'breaktime': this.breaktimeMinute > 0 ? Math.floor(this.breaktimeMinute / 60) : 0
+          'regulartime': this.workingMinutes >= 8 ? 8 : 4,
+          'overtime': this.workingMinutes - (this.workingMinutes >= 8 ? 8 : 4),
+          'breaktime': this.breaktimeMinutes > 0 ? Math.floor(this.breaktimeMinutes / 60) : 0
         })
       }
     },
