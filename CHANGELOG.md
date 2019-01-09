@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Update and improvement of Polish translation from [@daehwann](https://github.com/daehwann/52hours).
 
+## [0.5.1] - 2019-01-09
+### Added
+- 히스토리페이지에 사용자, 매니저 정보가 없을시 알럿후 페이지 이동
+
+### Fixed
+- 새로운 브라우저에서 페이지 접속 후 바로 폼 전송시 히스토리 초기화 문제
+
 ## [0.5.0] - 2019-01-09
 ### Added
 - vue-cli 적용
