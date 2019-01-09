@@ -1,57 +1,69 @@
 <template>
-  <v-card>
-    <v-card-title primary-title>
-      <h3 class="title">근무 시간 입력 이력</h3>
-      <v-spacer></v-spacer>
-      <v-progress-circular
-        v-if="progress"
-        :size="40"
-        indeterminate
-        color="primary"
-      ><span class="caption">Sync</span></v-progress-circular>
-      
-      <v-spacer></v-spacer>
-    </v-card-title>
-    <v-card-text>
-      <v-layout row wrap>
-        <p class="caption">최근 4주간의 등록 이력 (<i>매니저 - 사용자</i> 기준으로 저장)</p>
-      </v-layout>
-      <v-layout row wrap my-3>
-        <table>
-          <thead>
-            <tr>
-              <td class="py-3 text-xs-center grey lighten-5 grey--text"><b>일</b></td>
-              <td class="py-3 text-xs-center grey lighten-5"><b>월</b></td>
-              <td class="py-3 text-xs-center grey lighten-5"><b>화</b></td>
-              <td class="py-3 text-xs-center grey lighten-5"><b>수</b></td>
-              <td class="py-3 text-xs-center grey lighten-5"><b>목</b></td>
-              <td class="py-3 text-xs-center grey lighten-5"><b>금</b></td>
-              <td class="py-3 text-xs-center grey lighten-5 grey--text"><b>토</b></td>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(week, i) in weeks" :key="i">
-              <td v-for="(day, j) in week" :key="j" class="py-3 text-xs-center grey lighten-5" >
-                <span v-if="day && day.type === 'SUBMITTED'" class="caption">
-                  {{getMMDD(day.date)}}
-                  <v-icon disabled>check_circle_outline</v-icon><br>
-                </span>
-                <span v-else-if="day && day.type === 'NODATA'"  class="caption add-date" @click="addNewDate(day.date)" >
-                  {{getMMDD(day.date)}}
-                  <v-icon color="primary">add_circle</v-icon><br>
-                </span>
-                <span v-else-if="day && day.type === 'WEEKEND'" class="caption">
-                  {{getMMDD(day.date)}}
-                  <v-icon disabled>remove</v-icon><br>
-                </span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </v-layout>
-      
-    </v-card-text>
-  </v-card>
+  <div>
+    <v-card>
+      <v-card-title primary-title>
+        <h3 class="title">근무 시간 입력 이력</h3>
+        <v-spacer></v-spacer>
+        <v-progress-circular
+          v-if="progress"
+          :size="40"
+          indeterminate
+          color="primary"
+        ><span class="caption">Sync</span></v-progress-circular>
+        
+        <v-spacer></v-spacer>
+      </v-card-title>
+      <v-card-text>
+        <v-layout row wrap>
+          <p class="caption">최근 4주간의 등록 이력 (<i>매니저 - 사용자</i> 기준으로 저장)</p>
+        </v-layout>
+        <v-layout row wrap my-3>
+          <table>
+            <thead>
+              <tr>
+                <td class="py-3 text-xs-center grey lighten-5 grey--text"><b>일</b></td>
+                <td class="py-3 text-xs-center grey lighten-5"><b>월</b></td>
+                <td class="py-3 text-xs-center grey lighten-5"><b>화</b></td>
+                <td class="py-3 text-xs-center grey lighten-5"><b>수</b></td>
+                <td class="py-3 text-xs-center grey lighten-5"><b>목</b></td>
+                <td class="py-3 text-xs-center grey lighten-5"><b>금</b></td>
+                <td class="py-3 text-xs-center grey lighten-5 grey--text"><b>토</b></td>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(week, i) in weeks" :key="i">
+                <td v-for="(day, j) in week" :key="j" class="py-3 text-xs-center grey lighten-5" >
+                  <span v-if="day && day.type === 'SUBMITTED'" class="caption">
+                    {{getMMDD(day.date)}}
+                    <v-icon disabled>check_circle_outline</v-icon><br>
+                  </span>
+                  <span v-else-if="day && day.type === 'NODATA'"  class="caption add-date" @click="addNewDate(day.date)" >
+                    {{getMMDD(day.date)}}
+                    <v-icon color="primary">add_circle</v-icon><br>
+                  </span>
+                  <span v-else-if="day && day.type === 'WEEKEND'" class="caption">
+                    {{getMMDD(day.date)}}
+                    <v-icon disabled>remove</v-icon><br>
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </v-layout>
+        
+      </v-card-text>
+    </v-card>
+    <v-dialog v-model="dialog" persistent max-width="290">
+      <v-card>
+        <v-card-title class="headline">사용자 or 매니저 정보 없음</v-card-title>
+        <v-card-text>캘린더 관리를 위해서는 사용자와 매니저 정보가 필요합니다.</v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="primary" flat @click="$router.push('/')">메인으로 이동</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+  </div>
 </template>
 
 <script>
@@ -70,17 +82,26 @@ export default {
         Array(7).fill(null),
         Array(7).fill(null),
       ],
+      // dialog
+      dialog: false
     }
   },
   mounted () {
+    if (!this.username || !this.managername){
+      this.dialog = true
+    }
+
     this.setCalendar()
     this.$store.dispatch('loadHistory')
-
-    // this.$router.push({path:'/'})
-
   },
   
   computed: {
+    username () {
+      return this.$store.state.username
+    },
+    managername () {
+      return this.$store.state.managername
+    },
     history () {
       return this.$store.getters.history
     },
