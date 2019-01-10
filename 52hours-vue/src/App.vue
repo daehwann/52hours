@@ -34,12 +34,23 @@ export default {
       username: localStorage.username, 
       managername: localStorage.managername
     })
+    this.$store.dispatch('loadHistory')
   },
   watch: {
     '$route' (to, from) {
       const toDepth = to.path.split('/').length
       const fromDepth = from.path.split('/').length
       this.transitionName = toDepth < fromDepth ? 'slide-right' : 'slide-left'
+
+      this.$gtag && this.$gtag('config', 'UA-131329692-1', {
+        'page_title': ({
+            '/': 'Form', 
+            '/history': 'History'
+          })[to.path],
+        'page_path': to.path,
+        'page_location': document.location.href,
+        'user_id': this.$store.state.username,
+      })
     }
   },
   components: {

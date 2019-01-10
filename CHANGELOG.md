@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Update and improvement of Polish translation from [@daehwann](https://github.com/daehwann/52hours).
 
+## [0.5.3] - 2019-01-10
+### Changed
+- 근무시간을 분단위로 수정
+- Google Analytics 개선
+
+### Fixed
+- 첫페이지 History이력 동기화 문제
+
 ## [0.5.2] - 2019-01-09
 ### Changed
 - 메뉴 구조 변경

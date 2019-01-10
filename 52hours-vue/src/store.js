@@ -58,8 +58,8 @@ export default new Vuex.Store({
         this._vm.$http.get(getters.dbpath+'.json')
           .then(({ data }) => {
             
-            const list = (localStorage.history||'').split('|').concat(data||[])
-            commit('history', list || [])
+            const localStorageHistory = (localStorage.history||'').split('|')
+            commit('history', localStorageHistory.concat(data||[]))
             state.historyProgress = false
           })
       }

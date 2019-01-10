@@ -101,23 +101,20 @@
       <v-card>
         <v-card-title class="title">제출 하시겠습니까?</v-card-title>
         <v-card-text class="text-xs-center">
-          <p class="body-2">{{ date }}</p>
-          <p class="body-2">{{ startTime }} ~ {{ endTime }}</p>
-          <!-- <p class="body-2">표준근무: {{ regularMinutes }}h </p>
-          <p class="body-2">초과시간: {{ displayHour(overtimeMinutes) }}h</p>
-          <p class="body-2">휴식시간: {{ displayHour(breaktimeMinutes) }}</p>
-          <p class="body-2">최종근무시간: {{ displayHour(workingMinutes) }}</p> -->
-          <v-data-table
-            :items="[{name:'시간1', text:'3h 12m'},{name:'시간2', text:'2h 0m'}]"
-            class="elevation-1"
-            hide-actions
-            hide-headers
-          >
-            <template slot="items" slot-scope="props">
-              <td>{{ props.item.name }}</td>
-              <td>{{ props.item.text }}</td>
-            </template>
-          </v-data-table>
+          <p class="body-2 subheading">{{ date.replace(/-/g, '. ') }}<br/>{{ startTime }} ~ {{ endTime }}</p>
+          <v-divider mb-2></v-divider>
+          <p class="body-2 mt-3 caption">
+            전체시간: {{ displayHour(officeMinutes) }} <br/>
+            점심시간: {{ displayHour(this.halftime ? 0 : 60) }} <br/>
+            휴식시간: {{ displayHour(breaktimeMinutes) }} <br/>
+          </p>
+          <p><b>최종업무시간: {{ displayHour(workingMinutes) }}</b></p>
+          <v-divider></v-divider>
+          <p class="body-2 mt-3 caption">
+            정규업무시간: {{ displayHour(regularMinutes) }}
+            <br/>
+            초과업무시간: {{ displayHour(overtimeMinutes) }}
+          </p>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -130,7 +127,7 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <v-dialog v-if="completeDialog" v-model="completeDialog" fullscreen hide-overlay transition="dialog-bottom-transition">
+    <v-dialog v-model="completeDialog" fullscreen hide-overlay transition="dialog-bottom-transition">
       <v-card>
         <v-toolbar primary>
           <v-progress-circular v-show="submitting" :width="4" indeterminate color="primary"></v-progress-circular>
@@ -221,6 +218,7 @@ export default {
     this.manager = this.managerList
         .filter(m => m.text === this.managername)
         .map(m => m.value).pop() || ''
+    
   },
   watch: {
   },
@@ -257,13 +255,14 @@ export default {
       return Math.floor( (this.endDatetime - this.startDatetime) / 1000 / 60)
     },
     workingMinutes () {
-      return this.officeMinutes - (/* lunchtime */this.halftime ? 0 : 60) - (this.breaktimeMinutes)
+      return this.officeMinutes - (/* lunchtime */this.halftime ? 0 : 60) - this.breaktimeMinutes
     },
     regularMinutes () {
-      return this.halftime ? 4 : 8
+      return (this.halftime ? 4 : 8) * 60
     },
     overtimeMinutes () {
-      return this.workingMinutes - this.regularMinutes
+      const gap = this.workingMinutes - this.regularMinutes
+      return (gap > 0 )? gap : 0
     }
   },
   methods: {
@@ -290,6 +289,9 @@ export default {
     },
     displayHour (min) {
       return min ? `${Math.floor(min / 60)}h ${min % 60}m` : '0h 0m'
+    },
+    minuteToHour (min) {
+      return min ? Math.round(min / 60 * 100) / 100 : 0
     },
     check() {
       this.confirmDialog = true
@@ -379,12 +381,12 @@ export default {
             return `${year}년 ${weekOfYear}주`;
           })(this.endDatetime),
           'event_label': this.date,
-          'value': this.workingMinutes,
+          'value': this.minuteToHour(this.workingMinutes),
           'username': this.username,
           'managername': this.managername,
-          'regulartime': this.workingMinutes >= 8 ? 8 : 4,
-          'overtime': this.workingMinutes - (this.workingMinutes >= 8 ? 8 : 4),
-          'breaktime': this.breaktimeMinutes > 0 ? Math.floor(this.breaktimeMinutes / 60) : 0
+          'regulartime': this.minuteToHour(this.regularMinutes),
+          'overtime': this.minuteToHour(this.overtimeMinutes),
+          'breaktime': this.minuteToHour(this.breaktimeMinutes)
         })
       }
     },

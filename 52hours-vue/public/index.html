@@ -35,23 +35,6 @@
         });
       </script>
 
-      <!-- Global site tag (gtag.js) - Google Analytics -->
-      <script async src="https://www.googletagmanager.com/gtag/js?id=UA-131329692-1"></script>
-      <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'UA-131329692-1', {
-          'custom_map': {
-            dimension1: 'username',
-            dimension2: 'managername',
-            metric1: 'regulartime',
-            metric2: 'overtime',
-            metric3: 'breaktime'
-          }
-        });
-      </script>
-
       <!-- Rollbar for Error Handling -->
       <script>
         var _rollbarConfig = {
@@ -67,6 +50,30 @@
         // End Rollbar Snippet
       </script>
 
+      <!-- Global site tag (gtag.js) - Google Analytics -->
+      <script async src="https://www.googletagmanager.com/gtag/js?id=UA-131329692-1"></script>
+      <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        var path = document.location.hash.substr(1)
+        gtag('js', new Date());
+        gtag('config', 'UA-131329692-1', {
+          'page_title': ({
+              '/': 'Form', 
+              '/history': 'History'
+            })[path],
+          'page_path': path,
+          'page_location': document.location.href,
+          'user_id': localStorage.username,
+          'custom_map': {
+            dimension1: 'username',
+            dimension2: 'managername',
+            metric1: 'regulartime',
+            metric2: 'overtime',
+            metric3: 'breaktime'
+          }
+        });
+      </script>
     <% } %>
   </head>
   <body>
