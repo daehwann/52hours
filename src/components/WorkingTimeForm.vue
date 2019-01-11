@@ -45,21 +45,11 @@
                 <v-date-picker v-model="date" :show-current="today" no-title @input="menu1 = false"></v-date-picker>
               </v-menu>
             </v-flex>
-            <v-flex xs6 px-3 my-1>
-              <!-- 반차 여부 -->
-              <v-checkbox label="반차여부" v-model="halftime"></v-checkbox>
-            </v-flex>
           </v-layout>
           <v-layout row wrap my-1>
             <v-flex xs6 px-3>
               <!-- Start time -->
               <time-picker name="출근" label-name="출근" v-model="startTime"></time-picker>
-              <!-- <v-menu ref="menu" :close-on-content-click="false" v-model="timemodal1" :nudge-right="40" :return-value.sync="startTime"
-                lazy transition="scale-transition" offset-y full-width max-width="290px" min-width="290px">
-                <v-text-field slot="activator" v-model="startTime" label="출근" prepend-icon="access_time" 
-                    readonly></v-text-field>
-                <v-time-picker v-if="timemodal1" v-model="startTime" full-width @change="$refs.menu.save(startTime)"></v-time-picker>
-              </v-menu> -->
             </v-flex>
             <v-flex xs6 px-3>
               <!-- End time -->
@@ -88,7 +78,17 @@
       </v-card-text>
       <v-card-actions>
         <v-layout row wrap my-3>
-          <v-flex xs12 text-xs-right>
+          <v-flex xs3 pl-3 text-xs-right>
+              <!-- 반차 여부 -->
+              <v-checkbox label="반차" v-model="halftime"></v-checkbox>
+          </v-flex>
+          <v-flex xs4>
+            <v-radio-group v-if="halftime" v-model="halftype" row>
+              <v-radio label="오전반차" value="AM" ></v-radio>
+              <v-radio label="오후반차" value="PM"></v-radio>
+            </v-radio-group>
+          </v-flex>
+          <v-flex xs5 text-xs-right>
             <!-- Submit -->
             <v-btn color="primary" @click="check()">확인 후 제출</v-btn>
           </v-flex>
@@ -105,7 +105,7 @@
           <v-divider mb-2></v-divider>
           <p class="body-2 mt-3 caption">
             전체시간: {{ displayHour(officeMinutes) }} <br/>
-            점심시간: {{ displayHour(this.halftime ? 0 : 60) }} <br/>
+            점심시간: {{ displayHour(lunchMinute) }} <br/>
             휴식시간: {{ displayHour(breaktimeMinutes) }} <br/>
           </p>
           <p><b>최종업무시간: {{ displayHour(workingMinutes) }}</b></p>
@@ -161,16 +161,16 @@ export default {
       // username: '',
       manager: '',
       managerList: [
-        {text:'한웅', value:'1FAIpQLSeMzqRuE3I6twzxyLZ4y2EwkJyk2NPo09a4p1LvX3AQA7-RIw'},
-        {text:'정진영', value: '1FAIpQLSc8cUWGrPDHMD7X_JyxrhcqhqkPmALQOsdRR5MZuklvGpCkUA'},
-        {text:'배덕우', value: '1FAIpQLSepNBfnhWzJYtBJn10qrdVCaQaqiR7LLihL6AdctDay4OTKqw'},
-        {text:'최인호', value: '1FAIpQLSdZ3ykSfeJIp94N7zoJuImU-ZglaUkkPc-FLgiUcZkUkkRdgQ'},
-        {text:'조희제', value: '1FAIpQLSfjiyuJmey5ZUcJYgqqC0fZBlcCtktyeFZwANmym4f1B4QmXQ'},
-        {text:'장예성', value: '1FAIpQLSdEbsAkX9iHWF8603UXETPKcV3MEna2gOHRekZ1nIcdyU8w5w'},
-        {text:'김경희', value: '1FAIpQLSd3OeLXwiW9fnAxJQOZwQ_LT2Dk_SROfnE8kOVciueXQsYDcQ'},
-        {text:'김세정', value: '1FAIpQLScutj6ijHDN1hUZZ1l03lfGLbcSMRMzurq-dMOvx5BFrcUTfA'},
-        {text:'박영서', value: '1FAIpQLSfFHgRpKJdejDfxakoOIJgXULtGSm2SF3iNlJda0E_cdbdT1w'},
-        {text:'한정훈', value: '1FAIpQLSfxNENnR9EnB9cTv1oCW9pu_4pZNNoCfXrXILyvCvtqHKCWkg'}
+        {"text":"한웅 ", "value": "1FAIpQLSeMzqRuE3I6twzxyLZ4y2EwkJyk2NPo09a4p1LvX3AQA7-RIw"},
+        {"text":"정진영", "value": "1FAIpQLSc8cUWGrPDHMD7X_JyxrhcqhqkPmALQOsdRR5MZuklvGpCkUA"},
+        {"text":"배덕우", "value": "1FAIpQLSepNBfnhWzJYtBJn10qrdVCaQaqiR7LLihL6AdctDay4OTKqw"},
+        {"text":"최인호", "value": "1FAIpQLSdZ3ykSfeJIp94N7zoJuImU-ZglaUkkPc-FLgiUcZkUkkRdgQ"},
+        {"text":"조희제", "value": "1FAIpQLSfjiyuJmey5ZUcJYgqqC0fZBlcCtktyeFZwANmym4f1B4QmXQ"},
+        {"text":"장예성", "value": "1FAIpQLSdEbsAkX9iHWF8603UXETPKcV3MEna2gOHRekZ1nIcdyU8w5w"},
+        {"text":"김경희", "value": "1FAIpQLSd3OeLXwiW9fnAxJQOZwQ_LT2Dk_SROfnE8kOVciueXQsYDcQ"},
+        {"text":"김세정", "value": "1FAIpQLScutj6ijHDN1hUZZ1l03lfGLbcSMRMzurq-dMOvx5BFrcUTfA"},
+        {"text":"박영서", "value": "1FAIpQLSfFHgRpKJdejDfxakoOIJgXULtGSm2SF3iNlJda0E_cdbdT1w"},
+        {"text":"한정훈", "value": "1FAIpQLSfxNENnR9EnB9cTv1oCW9pu_4pZNNoCfXrXILyvCvtqHKCWkg"}
       ],
       
       // date & time
@@ -182,6 +182,7 @@ export default {
       menu1: false, // for date picker
       breaktimeMinutes: 0,
       halftime: false,
+      halftype: 'PM',
 
       // validations
       inputRules: {
@@ -221,6 +222,9 @@ export default {
     
   },
   watch: {
+    halftype (type) {
+      this.startTime = (type === 'PM') ? '09:00' : '14:00'
+    }
   },
   computed: {
     username () {
@@ -255,7 +259,11 @@ export default {
       return Math.floor( (this.endDatetime - this.startDatetime) / 1000 / 60)
     },
     workingMinutes () {
-      return this.officeMinutes - (/* lunchtime */this.halftime ? 0 : 60) - this.breaktimeMinutes
+      return this.officeMinutes - this.lunchMinute - this.breaktimeMinutes
+    },
+    lunchMinute () {
+      // 오후 반차만 점심시간 인정
+      return (this.halftime && this.halftype === 'AM') ? 0 : 60
     },
     regularMinutes () {
       return (this.halftime ? 4 : 8) * 60
