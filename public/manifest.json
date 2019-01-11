@@ -1,6 +1,6 @@
 {
-  "name": "tt",
-  "short_name": "tt",
+  "name": "CNX 52Hours",
+  "short_name": "52Hours",
   "icons": [
     {
       "src": "./img/favicon/android-chrome-192x192.png",
@@ -15,6 +15,6 @@
   ],
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#4DBA87"
+  "background_color": "#F5F5F5",
+  "theme_color": "#F5F5F5"
 }
