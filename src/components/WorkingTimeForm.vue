@@ -45,45 +45,50 @@
                 <v-date-picker v-model="date" :show-current="today" no-title @input="menu1 = false"></v-date-picker>
               </v-menu>
             </v-flex>
-            <v-layout row wrap my-1>
-              <v-flex xs6 px-3>
-                <!-- Start time -->
-                <time-picker name="출근" label-name="출근" v-model="startTime"></time-picker>
-                <!-- <v-menu ref="menu" :close-on-content-click="false" v-model="timemodal1" :nudge-right="40" :return-value.sync="startTime"
-                  lazy transition="scale-transition" offset-y full-width max-width="290px" min-width="290px">
-                  <v-text-field slot="activator" v-model="startTime" label="출근" prepend-icon="access_time" 
-                      readonly></v-text-field>
-                  <v-time-picker v-if="timemodal1" v-model="startTime" full-width @change="$refs.menu.save(startTime)"></v-time-picker>
-                </v-menu> -->
-              </v-flex>
-              <v-flex xs6 px-3>
-                <!-- End time -->
-                <time-picker name="퇴근" label-name="퇴근" v-model="endTime"></time-picker>
-              </v-flex>
-            </v-layout>
-            <v-layout row wrap my-1>
-              <!-- Breaktime -->
-              <v-flex xs6 sm4 px-3>
-                <v-text-field
-                  prepend-icon="free_breakfast"
-                  readonly
-                  name="breaktimeDisplay"
-                  label="휴식"
-                  v-model="breaktimeDisplay"
-                  persistent-hint
-                  hint="점심시간 제외"
-                ></v-text-field>
-              </v-flex>
-              <v-flex xs6 sm8 pr-3>
-                <v-slider label-name="휴식시간" ticks step="10" v-model="breaktimeMinute" min="0" max="120"></v-slider>
-              </v-flex>
-            </v-layout>
           </v-layout>
+          <v-layout row wrap my-1>
+            <v-flex xs6 px-3>
+              <!-- Start time -->
+              <time-picker name="출근" label-name="출근" v-model="startTime"></time-picker>
+            </v-flex>
+            <v-flex xs6 px-3>
+              <!-- End time -->
+              <time-picker name="퇴근" label-name="퇴근" v-model="endTime"></time-picker>
+            </v-flex>
+          </v-layout>
+          <v-layout row wrap my-1>
+            <!-- Breaktime -->
+            <v-flex xs6 sm4 px-3>
+              <v-text-field
+                prepend-icon="free_breakfast"
+                readonly
+                name="breaktimeDisplay"
+                label="휴식"
+                :value="displayHour(breaktimeMinutes)"
+                persistent-hint
+                hint="점심시간 제외"
+              ></v-text-field>
+            </v-flex>
+            <v-flex xs6 sm8 pr-3>
+              <v-slider label-name="휴식시간" ticks step="10" v-model="breaktimeMinutes" min="0" max="120"></v-slider>
+            </v-flex>
+          </v-layout>
+          
         </v-form>
       </v-card-text>
       <v-card-actions>
         <v-layout row wrap my-3>
-          <v-flex xs12 text-xs-right>
+          <v-flex xs3 pl-3 text-xs-right>
+              <!-- 반차 여부 -->
+              <v-checkbox label="반차" v-model="halftime"></v-checkbox>
+          </v-flex>
+          <v-flex xs4>
+            <v-radio-group v-if="halftime" v-model="halftype" row>
+              <v-radio label="오전반차" value="AM" ></v-radio>
+              <v-radio label="오후반차" value="PM"></v-radio>
+            </v-radio-group>
+          </v-flex>
+          <v-flex xs5 text-xs-right>
             <!-- Submit -->
             <v-btn color="primary" @click="check()">확인 후 제출</v-btn>
           </v-flex>
@@ -92,15 +97,24 @@
     </v-card>
 
     <!-- Dialogs-->
-    <v-dialog v-model="confirmDialog" max-width="290">
+    <v-dialog v-if="confirmDialog" v-model="confirmDialog" max-width="290">
       <v-card>
         <v-card-title class="title">제출 하시겠습니까?</v-card-title>
         <v-card-text class="text-xs-center">
-          <p class="body-2">{{ date }}</p>
-          <p class="body-2">{{ startTime }} ~ {{ endTime }}</p>
-          <p class="body-2">근무시간: {{ workingtime }}h</p>
-          <p class="body-2">휴식시간: {{ breaktimeDisplay }}</p>
-          <p class="body-2">초과시간: {{ overtime }}h</p>
+          <p class="body-2 subheading">{{ date.replace(/-/g, '. ') }}<br/>{{ startTime }} ~ {{ endTime }}</p>
+          <v-divider mb-2></v-divider>
+          <p class="body-2 mt-3 caption">
+            전체시간: {{ displayHour(officeMinutes) }} <br/>
+            점심시간: {{ displayHour(lunchMinute) }} <br/>
+            휴식시간: {{ displayHour(breaktimeMinutes) }} <br/>
+          </p>
+          <p><b>최종업무시간: {{ displayHour(workingMinutes) }}</b></p>
+          <v-divider></v-divider>
+          <p class="body-2 mt-3 caption">
+            정규업무시간: {{ displayHour(regularMinutes) }}
+            <br/>
+            초과업무시간: {{ displayHour(overtimeMinutes) }}
+          </p>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -147,16 +161,16 @@ export default {
       // username: '',
       manager: '',
       managerList: [
-        {text:'한웅', value:'1FAIpQLSeMzqRuE3I6twzxyLZ4y2EwkJyk2NPo09a4p1LvX3AQA7-RIw'},
-        {text:'정진영', value: '1FAIpQLSc8cUWGrPDHMD7X_JyxrhcqhqkPmALQOsdRR5MZuklvGpCkUA'},
-        {text:'배덕우', value: '1FAIpQLSepNBfnhWzJYtBJn10qrdVCaQaqiR7LLihL6AdctDay4OTKqw'},
-        {text:'최인호', value: '1FAIpQLSdZ3ykSfeJIp94N7zoJuImU-ZglaUkkPc-FLgiUcZkUkkRdgQ'},
-        {text:'조희제', value: '1FAIpQLSfjiyuJmey5ZUcJYgqqC0fZBlcCtktyeFZwANmym4f1B4QmXQ'},
-        {text:'장예성', value: '1FAIpQLSdEbsAkX9iHWF8603UXETPKcV3MEna2gOHRekZ1nIcdyU8w5w'},
-        {text:'김경희', value: '1FAIpQLSd3OeLXwiW9fnAxJQOZwQ_LT2Dk_SROfnE8kOVciueXQsYDcQ'},
-        {text:'김세정', value: '1FAIpQLScutj6ijHDN1hUZZ1l03lfGLbcSMRMzurq-dMOvx5BFrcUTfA'},
-        {text:'박영서', value: '1FAIpQLSfFHgRpKJdejDfxakoOIJgXULtGSm2SF3iNlJda0E_cdbdT1w'},
-        {text:'한정훈', value: '1FAIpQLSfxNENnR9EnB9cTv1oCW9pu_4pZNNoCfXrXILyvCvtqHKCWkg'}
+        {"text":"한웅 ", "value": "1FAIpQLSeMzqRuE3I6twzxyLZ4y2EwkJyk2NPo09a4p1LvX3AQA7-RIw"},
+        {"text":"정진영", "value": "1FAIpQLSc8cUWGrPDHMD7X_JyxrhcqhqkPmALQOsdRR5MZuklvGpCkUA"},
+        {"text":"배덕우", "value": "1FAIpQLSepNBfnhWzJYtBJn10qrdVCaQaqiR7LLihL6AdctDay4OTKqw"},
+        {"text":"최인호", "value": "1FAIpQLSdZ3ykSfeJIp94N7zoJuImU-ZglaUkkPc-FLgiUcZkUkkRdgQ"},
+        {"text":"조희제", "value": "1FAIpQLSfjiyuJmey5ZUcJYgqqC0fZBlcCtktyeFZwANmym4f1B4QmXQ"},
+        {"text":"장예성", "value": "1FAIpQLSdEbsAkX9iHWF8603UXETPKcV3MEna2gOHRekZ1nIcdyU8w5w"},
+        {"text":"김경희", "value": "1FAIpQLSd3OeLXwiW9fnAxJQOZwQ_LT2Dk_SROfnE8kOVciueXQsYDcQ"},
+        {"text":"김세정", "value": "1FAIpQLScutj6ijHDN1hUZZ1l03lfGLbcSMRMzurq-dMOvx5BFrcUTfA"},
+        {"text":"박영서", "value": "1FAIpQLSfFHgRpKJdejDfxakoOIJgXULtGSm2SF3iNlJda0E_cdbdT1w"},
+        {"text":"한정훈", "value": "1FAIpQLSfxNENnR9EnB9cTv1oCW9pu_4pZNNoCfXrXILyvCvtqHKCWkg"}
       ],
       
       // date & time
@@ -166,8 +180,10 @@ export default {
       startTime: '09:00',
       endTime: '',
       menu1: false, // for date picker
-      breaktimeMinute: 0,
-      
+      breaktimeMinutes: 0,
+      halftime: false,
+      halftype: 'PM',
+
       // validations
       inputRules: {
         manager: [ (v) => !!v || '소속을 선택하세요.'],
@@ -203,21 +219,12 @@ export default {
     this.manager = this.managerList
         .filter(m => m.text === this.managername)
         .map(m => m.value).pop() || ''
+    
   },
   watch: {
-    // username(newValue) {
-    //   localStorage.username = newValue
-    //   this.$store.commit('username', newValue)
-    // },
-    // managername(name) {
-    //   this.manager = this.managerList
-    //     .filter(m => m.text === name)
-    //     .map(m => m.value).pop() || ''
-
-    //   // localStorage.managername = managername
-    //   // //todo filter manager
-    //   // this.$store.commit('managername', managername)
-    // }
+    halftype (type) {
+      this.startTime = (type === 'PM') ? '09:00' : '14:00'
+    }
   },
   computed: {
     username () {
@@ -244,21 +251,26 @@ export default {
     endDatetime () {
       return new Date(`${this.date}T${this.endTime}+09:00`)
     },
-    standardDatetime () {
-      return new Date(`${this.date}T18:00:00+09:00`)
+
+    // officeMinutes = endDatetime - startDatetime
+    // workingMinutes = officeMinutes - lunchHour - breaktimeHour
+    // overtimeMinutes = workingMinutes - regularMinutes
+    officeMinutes () {
+      return Math.floor( (this.endDatetime - this.startDatetime) / 1000 / 60)
     },
-    overtime () {
-      return this.workingtime < 8 ? 0 : this.gapHours(this.standardDatetime, this.endDatetime)
+    workingMinutes () {
+      return this.officeMinutes - this.lunchMinute - this.breaktimeMinutes
     },
-    breaktimeDisplay () {
-      if (this.breaktimeMinute == 0) {
-        return '0h 0m'
-      } else {
-        return `${Math.floor(this.breaktimeMinute / 60)}h ${this.breaktimeMinute % 60}m`
-      }
+    lunchMinute () {
+      // 오후 반차만 점심시간 인정
+      return (this.halftime && this.halftype === 'AM') ? 0 : 60
     },
-    workingtime () {
-      return this.gapHours(this.startDatetime, this.endDatetime)-1
+    regularMinutes () {
+      return (this.halftime ? 4 : 8) * 60
+    },
+    overtimeMinutes () {
+      const gap = this.workingMinutes - this.regularMinutes
+      return (gap > 0 )? gap : 0
     }
   },
   methods: {
@@ -283,8 +295,11 @@ export default {
         'event_label': this.managername
       });
     },
-    gapHours (start, end) {
-      return Math.floor( (end - start) / 1000 / 60 / 60)
+    displayHour (min) {
+      return min ? `${Math.floor(min / 60)}h ${min % 60}m` : '0h 0m'
+    },
+    minuteToHour (min) {
+      return min ? Math.round(min / 60 * 100) / 100 : 0
     },
     check() {
       this.confirmDialog = true
@@ -336,8 +351,8 @@ export default {
           'entry.2119704746_minute': this.startDatetime.getMinutes(),
           'entry.680657899_hour': this.endDatetime.getHours(),
           'entry.680657899_minute': this.endDatetime.getMinutes(),
-          'entry.1760268447_hour': this.breaktimeMinute > 0 ? Math.floor(this.breaktimeMinute / 60) : 0,
-          'entry.1760268447_minute': this.breaktimeMinute % 60,
+          'entry.1760268447_hour': this.breaktimeMinutes > 0 ? Math.floor(this.breaktimeMinutes / 60) : 0,
+          'entry.1760268447_minute': this.breaktimeMinutes % 60,
           fvv: 1,
           pageHistory: 0
         }
@@ -374,12 +389,12 @@ export default {
             return `${year}년 ${weekOfYear}주`;
           })(this.endDatetime),
           'event_label': this.date,
-          'value': this.workingtime,
+          'value': this.minuteToHour(this.workingMinutes),
           'username': this.username,
           'managername': this.managername,
-          'regulartime': this.workingtime >= 8 ? 8 : 4,
-          'overtime': this.workingtime - (this.workingtime >= 8 ? 8 : 4),
-          'breaktime': this.breaktimeMinute > 0 ? Math.floor(this.breaktimeMinute / 60) : 0
+          'regulartime': this.minuteToHour(this.regularMinutes),
+          'overtime': this.minuteToHour(this.overtimeMinutes),
+          'breaktime': this.minuteToHour(this.breaktimeMinutes)
         })
       }
     },

@@ -4,8 +4,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- PWA 지원
+- Notification
+- Summary
+<!-- - Update and improvement of Polish translation from [@daehwann](https://github.com/daehwann/52hours). -->
+
+## [0.5.5] - 2019-01-11
+### Added
+- 반차 입력 추가
+
+## [0.5.4] - 2019-01-11
 ### Changed
-- Update and improvement of Polish translation from [@daehwann](https://github.com/daehwann/52hours).
+- 폴더 구조 변경
+- index.html 캐시제외
+
+## [0.5.3] - 2019-01-10
+### Changed
+- 근무시간을 분단위로 수정
+- Google Analytics 개선
+
+### Fixed
+- 첫페이지 History이력 동기화 문제
 
 ## [0.5.2] - 2019-01-09
 ### Changed
