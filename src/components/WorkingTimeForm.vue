@@ -84,8 +84,8 @@
           </v-flex>
           <v-flex xs4>
             <v-radio-group v-if="halftime" v-model="halftype" row>
-              <v-radio label="오전반차" value="AM" ></v-radio>
-              <v-radio label="오후반차" value="PM"></v-radio>
+              <v-radio label="오전" value="AM" ></v-radio>
+              <v-radio label="오후" value="PM"></v-radio>
             </v-radio-group>
           </v-flex>
           <v-flex xs5 text-xs-right>
@@ -156,7 +156,7 @@ export default {
     return {
       // menu
       drawer: false,
-  
+      
       // user
       // username: '',
       manager: '',
