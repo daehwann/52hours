@@ -163,14 +163,15 @@ export default {
       managerList: [
         {"text":"한웅 ", "value": "1FAIpQLSeMzqRuE3I6twzxyLZ4y2EwkJyk2NPo09a4p1LvX3AQA7-RIw"},
         {"text":"정진영", "value": "1FAIpQLSc8cUWGrPDHMD7X_JyxrhcqhqkPmALQOsdRR5MZuklvGpCkUA"},
-        {"text":"배덕우", "value": "1FAIpQLSepNBfnhWzJYtBJn10qrdVCaQaqiR7LLihL6AdctDay4OTKqw"},
+        {"text":"배덕우", "value": "1FAIpQLSd9e9LNYCVM7lUOKnrNMgnC-nAbxTOy7V6rIQ_ExkgRSoZSSQ"},
         {"text":"최인호", "value": "1FAIpQLSdZ3ykSfeJIp94N7zoJuImU-ZglaUkkPc-FLgiUcZkUkkRdgQ"},
         {"text":"조희제", "value": "1FAIpQLSfjiyuJmey5ZUcJYgqqC0fZBlcCtktyeFZwANmym4f1B4QmXQ"},
         {"text":"장예성", "value": "1FAIpQLSdEbsAkX9iHWF8603UXETPKcV3MEna2gOHRekZ1nIcdyU8w5w"},
         {"text":"김경희", "value": "1FAIpQLSd3OeLXwiW9fnAxJQOZwQ_LT2Dk_SROfnE8kOVciueXQsYDcQ"},
         {"text":"김세정", "value": "1FAIpQLScutj6ijHDN1hUZZ1l03lfGLbcSMRMzurq-dMOvx5BFrcUTfA"},
         {"text":"박영서", "value": "1FAIpQLSfFHgRpKJdejDfxakoOIJgXULtGSm2SF3iNlJda0E_cdbdT1w"},
-        {"text":"한정훈", "value": "1FAIpQLSfxNENnR9EnB9cTv1oCW9pu_4pZNNoCfXrXILyvCvtqHKCWkg"}
+        {"text":"한정훈", "value": "1FAIpQLSfxNENnR9EnB9cTv1oCW9pu_4pZNNoCfXrXILyvCvtqHKCWkg"},
+        {"text":"정석안", "value": "1FAIpQLSduhDIFavJYFo1STAhL80kWjH1aKeAjluZnlxE6BTRKnIJJqg"}
       ],
       
       // date & time
@@ -214,6 +215,9 @@ export default {
     let hour = this.now.getHours() + ''
     let min = this.now.getMinutes() + ''
     this.endTime = `${hour.padStart(2, '0')}:${min.padStart(2, '0')}`
+    if ('18:00'.localeCompare(this.endTime) === 1) { // 18시 이전일 경우
+      this.endTime = '18:00'
+    }
 
     // set manager
     this.manager = this.managerList
@@ -224,6 +228,7 @@ export default {
   watch: {
     halftype (type) {
       this.startTime = (type === 'PM') ? '09:00' : '14:00'
+      this.endTime = (type === 'PM') ? '14:00' : '18:00'
     }
   },
   computed: {
