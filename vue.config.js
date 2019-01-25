@@ -13,8 +13,12 @@ module.exports = {
     name: '퇴근',
     themeColor: '#F5F5F5',
     
+    // configure the workbox plugin
+    workboxPluginMode: 'InjectManifest',
     workboxOptions: {
-      exclude: [/\.html$/]    
+        // swSrc is required in InjectManifest mode.
+        swSrc: 'public/service-worker.js',
+        // ...other Workbox options...
     },
     iconPaths: {
       favicon32: 'img/favicon/favicon-32x32.png',

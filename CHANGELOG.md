@@ -5,10 +5,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- PWA 지원
 - Notification
 - Summary
 <!-- - Update and improvement of Polish translation from [@daehwann](https://github.com/daehwann/52hours). -->
+
+## [0.5.6] - 2019-01-15
+### Changed
+- PWA 구조 수정
+- 매니저 리스트 수정
 
 ## [0.5.5] - 2019-01-11
 ### Added
