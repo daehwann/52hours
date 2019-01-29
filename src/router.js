@@ -4,6 +4,7 @@ import Router from 'vue-router'
 
 import Main from './views/Main.vue'
 import History from './views/History.vue'
+import Request from './views/Request.vue'
 Vue.use(Router)
 
 export default new Router({
@@ -17,6 +18,11 @@ export default new Router({
       path: '/history',
       name: 'history',
       component: History
+    },
+    {
+      path: '/request',
+      name: 'request',
+      component: Request
     }
     // {
     //   path: '/about',

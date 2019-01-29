@@ -18,6 +18,14 @@
             <v-list-tile-title>History</v-list-tile-title>
           </v-list-tile-content>
         </v-list-tile>
+        <v-list-tile to="/request">
+          <v-list-tile-action>
+            <v-icon>history</v-icon>
+          </v-list-tile-action>
+          <v-list-tile-content>
+            <v-list-tile-title>문의</v-list-tile-title>
+          </v-list-tile-content>
+        </v-list-tile>
       </v-list>
     </v-navigation-drawer>
     <v-toolbar dense primary fixed app extended>
@@ -26,11 +34,15 @@
       <v-toolbar-title>CNX 52Hours</v-toolbar-title>
       <v-spacer></v-spacer>
       <v-tabs fixed-tabs color="transparent" slot="extension">
+        <v-tabs-slider></v-tabs-slider>
         <v-tab to="/">
           <v-icon left>web</v-icon><span>Form</span>
         </v-tab>
         <v-tab to="/history">
           <v-icon left>date_range</v-icon><span>History</span>
+        </v-tab>
+        <v-tab to="/request">
+          <v-icon left>question_answer</v-icon><span>문의</span>
         </v-tab>
       </v-tabs>
       <!-- <v-toolbar-items>
