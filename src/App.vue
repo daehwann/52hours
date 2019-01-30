@@ -34,6 +34,7 @@ export default {
       username: localStorage.username, 
       managername: localStorage.managername
     })
+    this.$store.dispatch('loadContent')
     this.$store.dispatch('loadHistory')
   },
   watch: {

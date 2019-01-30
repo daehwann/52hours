@@ -19,7 +19,7 @@
             <v-flex xs6 px-3>
               <!-- Username -->
               <v-text-field 
-                v-model="username" prepend-icon="person" name="username" 
+                v-model="usernameInput" prepend-icon="person" name="username" 
                 :rules="inputRules.username"
                 @change="usernameChanged"
                 label="이름" id="username" required></v-text-field>
@@ -134,7 +134,7 @@
           <v-btn v-show="!submitting" icon @click="closeComplete()">
             <v-icon>close</v-icon>
           </v-btn>
-          <v-toolbar-title>{{ submitting ? '전송중...' : '제출 완료' }}</v-toolbar-title>
+          <v-toolbar-title>{{ submitting ? '전송중...' : '제출 결과' }}</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn :disabled="submitting" flat @click="closeComplete()">Close</v-btn>
@@ -158,7 +158,7 @@ export default {
       drawer: false,
       
       // user
-      // username: '',
+      usernameInput: this.$store.state.username,
       manager: '',
       managerList: [
         {"text":"한웅 ", "value": "1FAIpQLSeMzqRuE3I6twzxyLZ4y2EwkJyk2NPo09a4p1LvX3AQA7-RIw"},
@@ -188,7 +188,10 @@ export default {
       // validations
       inputRules: {
         manager: [ (v) => !!v || '소속을 선택하세요.'],
-        username: [ (v) => !!v || '이름을 입력하세요.']
+        username: [ 
+          (v) => !!v || '이름을 입력하세요.',
+          (v) => !(/^ | $/g.test(v)) || '이름에 공백을 제거해주세요.'
+        ]
       },
   
       // dialogs
@@ -226,6 +229,9 @@ export default {
     
   },
   watch: {
+    usernameInput (name) {
+      this.$store.commit('username', name)
+    },
     halftype (type) {
       this.startTime = (type === 'PM') ? '09:00' : '14:00'
       this.endTime = (type === 'PM') ? '14:00' : '18:00'

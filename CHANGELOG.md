@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Summary
 <!-- - Update and improvement of Polish translation from [@daehwann](https://github.com/daehwann/52hours). -->
 
+
+## [0.5.7] - 2019-01-29
+### Fixed
+- 이름 관련 오류 수정
+
+### Added
+- 문의 탭 추가 by Disqus
+- FAQ 추가
+
+### Removed
+- PWA 제거 (업데이트 문제, 개선 후 적용)
+
 ## [0.5.6] - 2019-01-15
 ### Changed
 - PWA 구조 수정

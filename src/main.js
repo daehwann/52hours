@@ -5,7 +5,7 @@ import store from './store'
 import axios from 'axios'
 import './plugins/vuetify'
 import './plugins/vue-disqus'
-import './registerServiceWorker'
+// import './registerServiceWorker'
 
 Vue.config.productionTip = false
 Vue.prototype.$http = axios
