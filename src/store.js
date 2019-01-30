@@ -27,11 +27,21 @@ export default new Vuex.Store({
   },
   mutations: {
     init (state, {username, managername}) {
-      state.username = username
-      state.managername = managername
+      this.commit('username', username)
+      this.commit('managername', managername)
     },
     username (state, username) {
       state.username = username
+
+      if (username && this._vm.$rollbar) {
+        this._vm.$rollbar.configure({
+          payload: {
+            person: {
+              id: username, // required
+            }
+          }
+        });
+      }
     },
     managername (state, managername) {
       state.managername = managername

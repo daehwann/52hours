@@ -14,7 +14,7 @@
           <p class="caption"><i>사용자이름</i> 과 <i>매니저이름</i> 은 처음 입력 후 브라우저에 저장됩니다</p>
         </v-layout>
 
-        <v-form>
+        <v-form ref="workingform">
           <v-layout row wrap justify-space-between my-1>
             <v-flex xs6 px-3>
               <!-- Username -->
@@ -90,7 +90,7 @@
           </v-flex>
           <v-flex xs5 text-xs-right>
             <!-- Submit -->
-            <v-btn color="primary" @click="check()">확인 후 제출</v-btn>
+            <v-btn color="primary" @click="check()" :disabled="!formValid">확인 후 제출</v-btn>
           </v-flex>
         </v-layout>
       </v-card-actions>
@@ -200,7 +200,10 @@ export default {
       submitting: false,
       completeDialog: false,
       completed: false,
-      completedDate: ''
+      completedDate: '',
+
+      // validation
+      formValid: true
     }
   },
   
@@ -282,6 +285,9 @@ export default {
     overtimeMinutes () {
       const gap = this.workingMinutes - this.regularMinutes
       return (gap > 0 )? gap : 0
+    },
+    isFormValid() {
+      return this.$refs.workingform && this.$refs.workingform.validate()
     }
   },
   methods: {
@@ -313,6 +319,8 @@ export default {
       return min ? Math.round(min / 60 * 100) / 100 : 0
     },
     check() {
+      if (!this.$refs.workingform.validate()) return;
+
       this.confirmDialog = true
 
       // analytics
