@@ -11,7 +11,8 @@ export default new Vuex.Store({
     historyProgress: false,
     newDateFromHistory: '',
     newDateSubmitted: '',
-    dburl: 'https://cnx-go-home.firebaseio.com'
+    dburl: 'https://cnx-go-home.firebaseio.com',
+    content: {}
   },
   getters: {
     history: state => {
@@ -52,6 +53,12 @@ export default new Vuex.Store({
     }
   },
   actions: {
+    loadContent ({ state }) {
+      this._vm.$http.get('https://cnx-go-home.firebaseio.com/app-contents/request.json')
+        .then(({data}) => {
+          state.content = data
+        })
+    },
     loadHistory ({ commit, state, getters}) {
       if (state.username && state.managername) {
         state.historyProgress = true
