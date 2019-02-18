@@ -171,7 +171,8 @@ export default {
         {"text":"김세정", "value": "1FAIpQLScutj6ijHDN1hUZZ1l03lfGLbcSMRMzurq-dMOvx5BFrcUTfA"},
         {"text":"박영서", "value": "1FAIpQLSfFHgRpKJdejDfxakoOIJgXULtGSm2SF3iNlJda0E_cdbdT1w"},
         {"text":"한정훈", "value": "1FAIpQLSfxNENnR9EnB9cTv1oCW9pu_4pZNNoCfXrXILyvCvtqHKCWkg"},
-        {"text":"정석안", "value": "1FAIpQLSduhDIFavJYFo1STAhL80kWjH1aKeAjluZnlxE6BTRKnIJJqg"}
+        {"text":"정석안", "value": "1FAIpQLSduhDIFavJYFo1STAhL80kWjH1aKeAjluZnlxE6BTRKnIJJqg"},
+        {"text":"양혜진", "value": "1FAIpQLScbCO3sCMkh389ewW18QDAiMYBL0iY-E2L39oa0emPrwmW75g"}
       ],
       
       // date & time
