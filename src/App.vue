@@ -30,12 +30,15 @@ export default {
     }
   },
   created () {
-    this.$store.commit('init', {
-      username: localStorage.username, 
-      managername: localStorage.managername
-    })
     this.$store.dispatch('loadContent')
-    this.$store.dispatch('loadHistory')
+      .then(() => {
+        this.$store.commit('init', {
+          username: localStorage.username, 
+          managername: localStorage.managername
+        })
+      })
+      .then(() => this.$store.dispatch('loadHistory'))
+    
   },
   watch: {
     '$route' (to, from) {

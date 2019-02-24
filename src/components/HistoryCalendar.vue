@@ -94,7 +94,7 @@ export default {
       return this.$store.state.username
     },
     managername () {
-      return this.$store.state.managername
+      return this.$store.getters.managername
     },
     history () {
       return this.$store.getters.history
