@@ -23,7 +23,7 @@ export default new Vuex.Store({
       return state.history
         .filter(v => v && v!='undefined') // 텍스트예외
         .filter((v, i, a) => a.indexOf(v) === i)  //  중복제거
-        .sort((a, b) => b.localeCompare(a))
+        .sort((a, b) => b.ymd.localeCompare(a.ymd))
     },
     managername: state => {
       return state.manager ? state.manager.name : ''
@@ -111,9 +111,9 @@ export default new Vuex.Store({
                   if (!textTime) return Date.UTC(year, month, day)
 
                   const [ampmhour, min, sec] = textTime.split(':')
-                  const [ampm, hourStr] = ampmhour.split(' ') // '오전 9'
+                  const [ampm, hourStr] = ampmhour.replace('12', '00').split(' ') // '오전 9'
                   const hour = ampm == '오후' ? Number(hourStr) + 12 : Number(hourStr)
-                  return Date.UTC(year, month, day, hour+9, min, sec)
+                  return Date.UTC(year, month, day, hour-9, min, sec)
                 }
                 
                 const workingDate = new Date(date)
@@ -122,11 +122,12 @@ export default new Vuex.Store({
                 const day = workingDate.getDate()
                 
                 const workingMin = (getTimestamp(year, month, day, endTime) - getTimestamp(year, month, day, startTime)) / 1000 / 60
-                const breakingTimeMin = (getTimestamp(year, month, day, breakingTime) - workingDate.getTime()) / 1000 / 60
+                const breakingTimeMin = (getTimestamp(year, month, day, breakingTime) - Date.UTC(year, month, day, -9)) / 1000 / 60
                 const totalMin = workingMin - breakingTimeMin - 60 /*lunchtime */
 
                 return {
                   date: workingDate,
+                  ymd: `${year}-${String(month+1).padStart(2,0)}-${String(day).padStart(2,0)}`,
                   workingHour: Math.floor(totalMin / 60),
                   workingMinute: totalMin % 60
                 }
