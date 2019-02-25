@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Summary
 <!-- - Update and improvement of Polish translation from [@daehwann](https://github.com/daehwann/52hours). -->
 
+## [0.6.0] - 2019-02-25
+### Added
+- 전송 완료 이력을 DB에서 바로 조회
+- 캘린더에서 근무 시간 확인
 
 ## [0.5.7] - 2019-01-29
 ### Fixed

@@ -23,7 +23,7 @@ export default new Vuex.Store({
       return state.history
         .filter(v => v && v!='undefined') // 텍스트예외
         .filter((v, i, a) => a.indexOf(v) === i)  //  중복제거
-        .sort((a, b) => b.ymd.localeCompare(a.ymd))
+        .sort((a, b) => b.y_m_d.localeCompare(a.y_m_d))
     },
     managername: state => {
       return state.manager ? state.manager.name : ''
@@ -127,7 +127,7 @@ export default new Vuex.Store({
 
                 return {
                   date: workingDate,
-                  ymd: `${year}-${String(month+1).padStart(2,0)}-${String(day).padStart(2,0)}`,
+                  y_m_d: `${year}-${String(month+1).padStart(2,0)}-${String(day).padStart(2,0)}`,
                   workingHour: Math.floor(totalMin / 60),
                   workingMinute: totalMin % 60
                 }

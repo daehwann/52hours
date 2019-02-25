@@ -1,5 +1,27 @@
 <template>
   <div>
+    <v-layout>
+      <v-flex>
+        <v-sheet height="300" v-if="calendarStart && calendarEnd">
+          <v-calendar
+            :start="calendarStart"
+            :end="calendarEnd"
+            :value="calendarEnd"
+            color="primary"
+            type="custom-weekly"
+          >
+            <template
+              slot="day"
+              slot-scope="{ date }"
+            >
+              <template >
+                {{ historyMap[date]}}
+              </template>
+            </template>
+          </v-calendar>
+        </v-sheet>
+      </v-flex>
+    </v-layout>
     <v-card>
       <v-card-title primary-title>
         <h3 class="title">전송 이력</h3>
@@ -67,6 +89,13 @@ export default {
   data () {
     return {
       today: new Date(),
+      calendarStart: '',
+      calendarEnd: '',
+
+      // date - history map
+      historyMap: {},
+      historyList: [],
+
       // Date Class Array
       dateList: [],
       // For creating calendar
@@ -84,6 +113,9 @@ export default {
     if (!this.username || !this.managername){
       this.dialog = true
     }
+
+    this.calendarStart = this.getDisplayDate(new Date(this.today.getTime() - 21 * 24 * 60 * 60 * 1000)),
+    this.calendarEnd = this.getDisplayDate(this.today),
 
     this.setCalendar()
     this.$store.dispatch('loadHistory')
@@ -104,7 +136,7 @@ export default {
     }
   },
   watch: {
-    history () {
+    history (newHistory) {
       this.weeks = this.weeks.map(week => {
         return week.map(day => {
           if (day) {
@@ -117,14 +149,24 @@ export default {
           }
         })
       })
+
+      if (newHistory && newHistory.length) {
+        this.historyList = Array.from(Array(28).keys())
+          .map(n=> new Date(this.today.getTime() - (n * 24 * 60 * 60 * 1000)))
+          .map(this.getDisplayDate) // yyyy-mm-dd
+          .forEach(date => {
+            const item = newHistory.find(item => item.y_m_d === date)
+            this.historyMap[date] = item || {}
+          })
+      }
     }
   },
   methods: {
     setCalendar () {
-      this.today = new Date()
-      this.today.setHours(0,0,0)
+      const now = new Date()
+      now.setHours(0,0,0)
       this.dateList = Array.from(Array(28).keys())
-        .map(n=> new Date(this.today.getTime() - (n * 24 * 60 * 60 * 1000)))
+        .map(n=> new Date(now.getTime() - (n * 24 * 60 * 60 * 1000)))
 
       let _dateList = this.dateList.copyWithin().reverse()
       // calendar 의 시작을 일요일로 맞춤
@@ -143,6 +185,8 @@ export default {
           }
         })
       })
+
+      
     },
     getDisplayDate(date) {
       return date ? `${date.getFullYear()}-${(date.getMonth()+1+'').padStart(2, '0')}-${(date.getDate()+'').padStart(2, '0')}` : ''
