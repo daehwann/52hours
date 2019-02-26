@@ -11,7 +11,7 @@ export default new Vuex.Store({
     manager: {},
     managerList: [],
     history: [],
-    historyProgress: false,
+    historyProgress: true,
     newDateFromHistory: '',
     newDateSubmitted: '',
     contentURL: 'https://cnx-go-home.firebaseio.com/app-contents/request.json',
@@ -65,8 +65,11 @@ export default new Vuex.Store({
     addHistory (state, date) {
       state.history.push(date)
     },
-    history (state, list) { 
+    history (state, list) {
       state.history = list
+    },
+    historyProgress (state, status) {
+      state.historyProgress = status
     },
     newDateFromHistory (state, date) {
       state.newDateFromHistory = date
@@ -87,29 +90,36 @@ export default new Vuex.Store({
       state.managerList = managerList
       
     },
-    async loadHistory ({ commit, state, getters}) {
-      if (state.username && getters.managerSheet) {
-        state.historyProgress = true
-        
-        const params = { 
-          username: state.username,
-          startDate: new Date().toISOString().substr(0,10),
-          sheetId: state.manager.sheet,
-        }
+    async loadHistory ({ commit, state, getters }) {
+      commit('historyProgress', true)
 
-        return new Promise((resolve, reject) => {
-            jsonp(`${state.historyURL}?${qs.stringify(params)}`, {
-              timeout: 5000
-            }, (err, data) => {
-              err ? reject(err) : resolve(data.result)
+      if (state.history.length) {
+        return new Promise ((resolve) => {
+          commit('historyProgress', false)
+          resolve(state.history)
+        })
+      } else {
+        if (state.username && getters.managerSheet) {
+  
+          const params = { 
+            username: state.username,
+            startDate: new Date().toISOString().substr(0,10),
+            sheetId: state.manager.sheet,
+          }
+  
+          return new Promise((resolve, reject) => {
+              jsonp(`${state.historyURL}?${qs.stringify(params)}`, {
+                timeout: 5000
+              }, (err, data) => {
+                err ? reject(err) : resolve(data.result)
+              })
             })
-          })
-          .then( (data) => {
-            return data.map( ([date, , startTime, endTime, breakingTime]) => {
-                            
+            .then( (data) => {
+              return data.map( ([date, , startTime, endTime, breakingTime]) => {
+                              
                 const getTimestamp = (year, month, day, textTime /*"오전 9:00:00" format*/) => {
                   if (!textTime) return Date.UTC(year, month, day)
-
+  
                   const [ampmhour, min, sec] = textTime.split(':')
                   const [ampm, hourStr] = ampmhour.replace('12', '00').split(' ') // '오전 9'
                   const hour = ampm == '오후' ? Number(hourStr) + 12 : Number(hourStr)
@@ -124,7 +134,7 @@ export default new Vuex.Store({
                 const workingMin = (getTimestamp(year, month, day, endTime) - getTimestamp(year, month, day, startTime)) / 1000 / 60
                 const breakingTimeMin = (getTimestamp(year, month, day, breakingTime) - Date.UTC(year, month, day, -9)) / 1000 / 60
                 const totalMin = workingMin - breakingTimeMin - 60 /*lunchtime */
-
+  
                 return {
                   date: workingDate,
                   y_m_d: `${year}-${String(month+1).padStart(2,0)}-${String(day).padStart(2,0)}`,
@@ -132,17 +142,24 @@ export default new Vuex.Store({
                   workingMinute: totalMin % 60
                 }
               })
-          })
-          .then( history => {
-            console.log(history)
-
-            const localStorageHistory = (localStorage.history||'').split('|')
-            commit('history', localStorageHistory.concat(history||[]))
-            state.historyProgress = false
-
-            return state.history
-          })
+            })
+            .then( history => {
+              console.log(history.length + ' History Loaded')
+  
+              commit('history', history)
+  
+              commit('historyProgress', false)
+  
+              return state.history
+            }).catch(error => {
+              console.error('Error while loading history', error)
+              commit('historyProgress', false)
+            })
+        } else {
+          commit('historyProgress', false)
+        }
       }
+
     },
     async storeHistory ({ commit, getters }, newDate) {
       commit('addHistory', newDate)

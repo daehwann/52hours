@@ -66,25 +66,13 @@ export default {
 
       // date - history map
       historyMap: {},
-      historyList: [],
 
-      // Date Class Array
-      dateList: [],
-      // For creating calendar
-      weeks: [
-        Array(7).fill(null),
-        Array(7).fill(null),
-        Array(7).fill(null),
-        Array(7).fill(null),
-      ],
       // dialog
       dialog: false
     }
   },
   mounted () {
-    if (!this.username || !this.managername){
-      this.dialog = true
-    }
+
 
     this.$store.dispatch('loadHistory')
 
@@ -103,24 +91,37 @@ export default {
     history () {
       return this.$store.getters.history
     },
+    userValid () {
+      return !!this.username && !!this.managername
+    },
     progress () {
       return this.$store.state.historyProgress
     }
   },
   watch: {
-    history (newHistory) {
-      if (newHistory && newHistory.length) {
-        Array.from(Array(28).keys())
+    history () {
+      if (this.history.length) {
+        this.setHistory()
+      }
+    },
+    // progress (progress) {
+    //   if (!progress && this.userValid) {
+    //     this.setHistory()
+    //   } 
+    // },
+  },
+  methods: {
+    setHistory () {
+      if (this.history && this.history.length) {
+        Array.from(Array(21).keys())
           .map(n=> new Date(this.today.getTime() - (n * 24 * 60 * 60 * 1000)))
           .map(this.getDisplayDate) // yyyy-mm-dd
           .forEach(date => {
-            const item = newHistory.find(item => item.y_m_d === date)
+            const item = this.history.find(item => item.y_m_d === date)
             this.historyMap[date] = item || { y_m_d: date }
           })
       }
-    }
-  },
-  methods: {
+    },
     getDisplayDate(date) {
       return date ? `${date.getFullYear()}-${(date.getMonth()+1+'').padStart(2, '0')}-${(date.getDate()+'').padStart(2, '0')}` : ''
     },
