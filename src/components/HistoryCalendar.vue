@@ -72,10 +72,10 @@ export default {
     }
   },
   mounted () {
-
+    
 
     this.$store.dispatch('loadHistory')
-
+    
     this.calendarStart = this.getDisplayDate(new Date(this.today.getTime() - 21 * 24 * 60 * 60 * 1000))
     this.calendarEnd = this.getDisplayDate(this.today)
 
@@ -96,19 +96,30 @@ export default {
     },
     progress () {
       return this.$store.state.historyProgress
+    },
+    page () {
+      return this.$route.path
     }
   },
   watch: {
+    page () {
+      console.log('page changed')
+    },
+    userValid () {
+      this.dialog = !this.userValid
+    },
     history () {
       if (this.history.length) {
         this.setHistory()
       }
     },
-    // progress (progress) {
-    //   if (!progress && this.userValid) {
-    //     this.setHistory()
-    //   } 
-    // },
+    progress (progress) {
+      if (!progress && this.userValid) {
+        this.setHistory()
+      } else if (!this.userValid) {
+        this.dialog = true
+      }
+    },
   },
   methods: {
     setHistory () {

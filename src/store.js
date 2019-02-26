@@ -92,81 +92,82 @@ export default new Vuex.Store({
     },
     async loadHistory ({ commit, state, getters }) {
       commit('historyProgress', true)
+      
+      // if (state.history.length) {
+      //   return new Promise ((resolve) => {
+      //     commit('historyProgress', false)
+      //     resolve(state.history)
+      //   })
+      // } else {
+      // }
+      if (state.username && getters.managerSheet) {
 
-      if (state.history.length) {
-        return new Promise ((resolve) => {
-          commit('historyProgress', false)
-          resolve(state.history)
-        })
-      } else {
-        if (state.username && getters.managerSheet) {
-  
-          const params = { 
-            username: state.username,
-            startDate: new Date().toISOString().substr(0,10),
-            sheetId: state.manager.sheet,
-          }
-  
-          return new Promise((resolve, reject) => {
-              jsonp(`${state.historyURL}?${qs.stringify(params)}`, {
-                timeout: 5000
-              }, (err, data) => {
-                err ? reject(err) : resolve(data.result)
-              })
-            })
-            .then( (data) => {
-              return data.map( ([date, , startTime, endTime, breakingTime]) => {
-                              
-                const getTimestamp = (year, month, day, textTime /*"오전 9:00:00" format*/) => {
-                  if (!textTime) return Date.UTC(year, month, day)
-  
-                  const [ampmhour, min, sec] = textTime.split(':')
-                  const [ampm, hourStr] = ampmhour.replace('12', '00').split(' ') // '오전 9'
-                  const hour = ampm == '오후' ? Number(hourStr) + 12 : Number(hourStr)
-                  return Date.UTC(year, month, day, hour-9, min, sec)
-                }
-                
-                const workingDate = new Date(date)
-                const year = workingDate.getFullYear()
-                const month = workingDate.getMonth()
-                const day = workingDate.getDate()
-                
-                const workingMin = (getTimestamp(year, month, day, endTime) - getTimestamp(year, month, day, startTime)) / 1000 / 60
-                const breakingTimeMin = (getTimestamp(year, month, day, breakingTime) - Date.UTC(year, month, day, -9)) / 1000 / 60
-                const totalMin = workingMin - breakingTimeMin - 60 /*lunchtime */
-  
-                return {
-                  date: workingDate,
-                  y_m_d: `${year}-${String(month+1).padStart(2,0)}-${String(day).padStart(2,0)}`,
-                  workingHour: Math.floor(totalMin / 60),
-                  workingMinute: totalMin % 60
-                }
-              })
-            })
-            .then( history => {
-              console.log(history.length + ' History Loaded')
-  
-              commit('history', history)
-  
-              commit('historyProgress', false)
-  
-              return state.history
-            }).catch(error => {
-              console.error('Error while loading history', error)
-              commit('historyProgress', false)
-            })
-        } else {
-          commit('historyProgress', false)
+        const params = { 
+          username: state.username,
+          startDate: new Date().toISOString().substr(0,10),
+          sheetId: state.manager.sheet,
         }
+
+        return new Promise((resolve, reject) => {
+            jsonp(`${state.historyURL}?${qs.stringify(params)}`, {
+              timeout: 5000
+            }, (err, data) => {
+              err ? reject(err) : resolve(data.result)
+            })
+          })
+          .then( data => {
+            return data.map( ([date, , startTime, endTime, breakingTime]) => {
+                            
+              const getTimestamp = (year, month, day, textTime /*"오전 9:00:00" format*/) => {
+                if (!textTime) return Date.UTC(year, month, day)
+
+                const [ampmhour, min, sec] = textTime.split(':')
+                const [ampm, hourStr] = ampmhour.replace('12', '00').split(' ') // '오전 9'
+                const hour = ampm == '오후' ? Number(hourStr) + 12 : Number(hourStr)
+                return Date.UTC(year, month, day, hour-9, min, sec)
+              }
+              
+              const workingDate = new Date(date)
+              const year = workingDate.getFullYear()
+              const month = workingDate.getMonth()
+              const day = workingDate.getDate()
+              
+              const workingMin = (getTimestamp(year, month, day, endTime) - getTimestamp(year, month, day, startTime)) / 1000 / 60
+              const breakingTimeMin = (getTimestamp(year, month, day, breakingTime) - Date.UTC(year, month, day, -9)) / 1000 / 60
+              const totalMin = workingMin - breakingTimeMin - 60 /*lunchtime */
+
+              return {
+                date: workingDate,
+                y_m_d: `${year}-${String(month+1).padStart(2,0)}-${String(day).padStart(2,0)}`,
+                workingHour: Math.floor(totalMin / 60),
+                workingMinute: totalMin % 60
+              }
+            })
+          })
+          .then( history => {
+            console.log(history.length + ' History Loaded')
+
+            commit('history', history)
+
+            commit('historyProgress', false)
+
+            return state.history
+          })
+          .catch( error => {
+            console.error('Error while loading history', error)
+            commit('historyProgress', false)
+          })
+      } else {
+        commit('historyProgress', false)
       }
-
-    },
-    async storeHistory ({ commit, getters }, newDate) {
-      commit('addHistory', newDate)
-      const { data: result } = await this._vm.$http.put(getters.dbpath+'.json', getters.history)
-      console.log('History Stored', result)
-
-      return result
+      
     }
+    // async storeHistory ({ commit, getters }, newDate) {
+    //   commit('addHistory', newDate)
+    //   const { data: result } = await this._vm.$http.put(getters.dbpath+'.json', getters.history)
+    //   console.log('History Stored', result)
+
+    //   return result
+    // }
   }
 })

@@ -377,7 +377,7 @@ export default {
       this.completeDialog = true
 
       // save history
-      this.$store.dispatch('storeHistory', this.date)
+      // this.$store.dispatch('storeHistory', this.date)
 
       this.submitting = true;
 
