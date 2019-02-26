@@ -3,8 +3,8 @@
     
     <v-layout row wrap class="text-xs-center">
       <v-flex xs1>
-        <v-chip small v-if="hours">{{ hours }}H {{ minutes || 0 }}M</v-chip>
-        <v-btn small v-if="!hours" flat icon color="primary" @click="$emit('addNewDate')">
+        <div v-if="hours">{{ String(hours).padStart(2,0) }}h {{ String(minutes || 0).padStart(2,0) }}m</div>
+        <v-btn small v-if="!hours && y_m_d" flat icon color="primary" @click="$emit('addNewDate')">
           <v-icon>add_circle</v-icon>
         </v-btn>  
       </v-flex>

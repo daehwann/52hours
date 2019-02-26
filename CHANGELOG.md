@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - 전송 완료 이력을 DB에서 바로 조회
 - 캘린더에서 근무 시간 확인
+- 근무 시간 요약 (2주)
+- Refresh 버튼
 
 ## [0.5.7] - 2019-01-29
 ### Fixed
