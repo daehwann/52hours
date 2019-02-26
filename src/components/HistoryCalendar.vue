@@ -10,14 +10,18 @@
       <v-card-text>
         <v-layout row wrap align-end justify-space-around>
           <v-flex xs6 px-2 v-for="(week,key,i) in weeklyMinuteSum" :key="key">
-            <v-card v-if="i<2" height="200" :color="i==0 ? 'primary' : ''" :dark="i==0">
+            <v-card v-if="i<2" :color="i==0 ? 'primary' : ''" :dark="i==0">
               <v-card-title primary-title >
-                <div class="display-2">{{ String(Math.floor(week.totalMinute / 60)).padStart(2,0) }}h</div>
-                <div class="display-1">{{ String(week.totalMinute % 60).padStart(2,0) }}m</div>
+                <div class="display-2 px-2">{{ String(Math.floor(week.totalMinute / 60)).padStart(2,0) }}h</div>
+                <div class="display-1 px-2">{{ String(week.totalMinute % 60).padStart(2,0) }}m</div>
               </v-card-title>
               <v-card-text>
-                  <div>{{getDisplayDate(week.start)}} ~</div>
-                  <div>{{getDisplayDate(week.end)}}</div>
+                  <v-layout row wrap>
+                    <v-flex xs12 sm6 class="text-xs-left text-sm-right">{{getDisplayDate(week.start)}} ~ </v-flex>
+                    <v-flex xs12 sm6 class="text-xs-left">{{getDisplayDate(week.end) || 'Today'}}</v-flex>
+                  </v-layout>
+                  <div></div>
+                  <div></div>
               </v-card-text>
             </v-card>
           </v-flex>
@@ -108,6 +112,9 @@ export default {
     }
   },
   mounted () {
+    if (!localStorage.username || !localStorage.managername) {
+      this.dialog = true
+    }
     this.$store.dispatch('loadHistory')
 
     this.calendarStart = this.getDisplayDate(new Date(this.today.getTime() - (14 + this.today.getDay()) * 24 * 60 * 60 * 1000))
@@ -124,7 +131,8 @@ export default {
       return this.$store.getters.history
     },
     userValid () {
-      return !!this.username && !!this.managername
+      return (!!this.username && !!this.managername) 
+          || (!localStorage.username || !localStorage.managername)
     },
     progress () {
       return this.$store.state.historyProgress
@@ -150,8 +158,6 @@ export default {
     progress (progress) {
       if (!progress && this.userValid) {
         this.setHistory()
-      } else if (!this.userValid) {
-        this.dialog = true
       }
     },
   },
