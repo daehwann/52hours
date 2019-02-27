@@ -2,7 +2,6 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import qs from 'query-string'
 import jsonp from 'jsonp'
-
 Vue.use(Vuex)
 
 export default new Vuex.Store({
@@ -15,6 +14,7 @@ export default new Vuex.Store({
     newDateFromHistory: '',
     newDateSubmitted: '',
     contentURL: 'https://cnx-go-home.firebaseio.com/app-contents/request.json',
+    managerListURL: 'https://cnx-go-home.firebaseio.com/managerList.json',
     historyURL: 'https://script.google.com/macros/s/AKfycbxnqs8LDRyDxvT0smyGqY1OMuHLqWbNe4v34HRt0vHJarbxIwYO/exec',
     content: {}
   },
@@ -86,7 +86,7 @@ export default new Vuex.Store({
       const { data: contents } = await this._vm.$http.get(state.contentURL)
       state.content = contents
         
-      const { data: managerList } = await this._vm.$http.get('/manager.json')
+      const { data: managerList } = await this._vm.$http.get(state.managerListURL)
       state.managerList = managerList
       
     },
