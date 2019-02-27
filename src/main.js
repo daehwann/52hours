@@ -10,6 +10,7 @@ import './plugins/vue-disqus'
 Vue.config.productionTip = false
 Vue.prototype.$http = axios
 Vue.prototype.$gtag = window.gtag
+Vue.prototype.$rollbar = window.Rollbar
 
 new Vue({
   router,

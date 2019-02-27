@@ -14,7 +14,7 @@
           <p class="caption"><i>사용자이름</i> 과 <i>매니저이름</i> 은 처음 입력 후 브라우저에 저장됩니다</p>
         </v-layout>
 
-        <v-form>
+        <v-form ref="workingform">
           <v-layout row wrap justify-space-between my-1>
             <v-flex xs6 px-3>
               <!-- Username -->
@@ -27,11 +27,10 @@
             <v-flex xs6 px-3>
               <!-- Manager -->
               <v-select  dense prepend-icon="people" name="manager" 
-                v-model="manager"
+                v-model="managername"
                 :rules="inputRules.manager"
                 :items="managerList"
                 label="매니저" 
-                @change="managernameChanged"
                 required></v-select>
             </v-flex>
           </v-layout>
@@ -90,7 +89,7 @@
           </v-flex>
           <v-flex xs5 text-xs-right>
             <!-- Submit -->
-            <v-btn color="primary" @click="check()">확인 후 제출</v-btn>
+            <v-btn color="primary" @click="check()" :disabled="!formValid">확인 후 제출</v-btn>
           </v-flex>
         </v-layout>
       </v-card-actions>
@@ -158,22 +157,11 @@ export default {
       drawer: false,
       
       // user
-      usernameInput: this.$store.state.username,
-      manager: '',
-      managerList: [
-        {"text":"한웅 ", "value": "1FAIpQLSeMzqRuE3I6twzxyLZ4y2EwkJyk2NPo09a4p1LvX3AQA7-RIw"},
-        {"text":"정진영", "value": "1FAIpQLSc8cUWGrPDHMD7X_JyxrhcqhqkPmALQOsdRR5MZuklvGpCkUA"},
-        {"text":"배덕우", "value": "1FAIpQLSd9e9LNYCVM7lUOKnrNMgnC-nAbxTOy7V6rIQ_ExkgRSoZSSQ"},
-        {"text":"최인호", "value": "1FAIpQLSdZ3ykSfeJIp94N7zoJuImU-ZglaUkkPc-FLgiUcZkUkkRdgQ"},
-        {"text":"조희제", "value": "1FAIpQLSfjiyuJmey5ZUcJYgqqC0fZBlcCtktyeFZwANmym4f1B4QmXQ"},
-        {"text":"장예성", "value": "1FAIpQLSdEbsAkX9iHWF8603UXETPKcV3MEna2gOHRekZ1nIcdyU8w5w"},
-        {"text":"김경희", "value": "1FAIpQLSd3OeLXwiW9fnAxJQOZwQ_LT2Dk_SROfnE8kOVciueXQsYDcQ"},
-        {"text":"김세정", "value": "1FAIpQLScutj6ijHDN1hUZZ1l03lfGLbcSMRMzurq-dMOvx5BFrcUTfA"},
-        {"text":"박영서", "value": "1FAIpQLSfFHgRpKJdejDfxakoOIJgXULtGSm2SF3iNlJda0E_cdbdT1w"},
-        {"text":"한정훈", "value": "1FAIpQLSfxNENnR9EnB9cTv1oCW9pu_4pZNNoCfXrXILyvCvtqHKCWkg"},
-        {"text":"정석안", "value": "1FAIpQLSduhDIFavJYFo1STAhL80kWjH1aKeAjluZnlxE6BTRKnIJJqg"}
-      ],
-      
+      usernameInput: localStorage.username,
+
+      // manager
+      managername: localStorage.managername,
+
       // date & time
       now: new Date(),
       date: '',
@@ -200,7 +188,10 @@ export default {
       submitting: false,
       completeDialog: false,
       completed: false,
-      completedDate: ''
+      completedDate: '',
+
+      // validation
+      formValid: true
     }
   },
   
@@ -220,41 +211,43 @@ export default {
     this.endTime = `${hour.padStart(2, '0')}:${min.padStart(2, '0')}`
     if ('18:00'.localeCompare(this.endTime) === 1) { // 18시 이전일 경우
       this.endTime = '18:00'
-    }
-
-    // set manager
-    this.manager = this.managerList
-        .filter(m => m.text === this.managername)
-        .map(m => m.value).pop() || ''
+    } 
     
   },
   watch: {
     usernameInput (name) {
       this.$store.commit('username', name)
     },
+    managername (managername) {
+      this.$store.commit('manager', managername)
+      this.$store.dispatch('loadHistory')
+    },
     halftype (type) {
       this.startTime = (type === 'PM') ? '09:00' : '14:00'
       this.endTime = (type === 'PM') ? '14:00' : '18:00'
-    }
+    },
   },
   computed: {
     username () {
       return this.$store.state.username
     },
-    managername () {
-      return this.$store.state.managername
+    manager () {
+      return this.$store.state.manager
+    },
+    managerList () {
+      return this.$store.getters.managerFormList
     },
     // manager () {
     //   return (this.managerList.find(m => m.text == this.managername) || {manager:''}).manager
     // },
     teamResponseURL() {
-      return `https://docs.google.com/forms/d/e/${this.manager}/formResponse`
+      return `https://docs.google.com/forms/d/e/${this.manager.form}/formResponse`
     },
     teamOriginalFormURL() {
       if (!this.manager) {
         return "javascript:alert('소속을 선택하세요')"
       }
-      return `https://docs.google.com/forms/d/e/${this.manager}/viewform`
+      return `https://docs.google.com/forms/d/e/${this.manager.form}/viewform`
     },
     startDatetime () {
       return new Date(`${this.date}T${this.startTime}+09:00`)
@@ -282,6 +275,9 @@ export default {
     overtimeMinutes () {
       const gap = this.workingMinutes - this.regularMinutes
       return (gap > 0 )? gap : 0
+    },
+    isFormValid() {
+      return this.$refs.workingform && this.$refs.workingform.validate()
     }
   },
   methods: {
@@ -289,21 +285,19 @@ export default {
       localStorage.username = name
       this.$store.commit('username', name)
     },
-    managernameChanged (managerID) {
-      let name = this.managerList
-        .filter(m => m.value === managerID)
-        .map(m => m.text).pop() || ''
+    // managernameChanged (managerID) {
+    //   let name = this.managerList
+    //     .filter(m => m.value === managerID)
+    //     .map(m => m.text).pop() || ''
 
-      localStorage.managername = name
-
-      this.$store.commit('managername', name)
-      this.$store.dispatch('loadHistory')
-    },
+    //   this.$store.commit('manager', name)
+    //   this.$store.dispatch('loadHistory')
+    // },
     goToOriginPage () {
       // analytics
       this.$gtag && this.$gtag('event', 'original page', {
         'event_category': 'link',
-        'event_label': this.managername
+        'event_label': this.manager.name
       });
     },
     displayHour (min) {
@@ -313,12 +307,14 @@ export default {
       return min ? Math.round(min / 60 * 100) / 100 : 0
     },
     check() {
+      if (!this.$refs.workingform.validate()) return;
+
       this.confirmDialog = true
 
       // analytics
       this.$gtag && this.$gtag('event', 'check', {
         'event_category': 'form',
-        'event_label': this.managername
+        'event_label': this.manager.name
       });
     },
     confirm () {
@@ -381,7 +377,7 @@ export default {
       this.completeDialog = true
 
       // save history
-      this.$store.dispatch('storeHistory', this.date)
+      // this.$store.dispatch('storeHistory', this.date)
 
       this.submitting = true;
 

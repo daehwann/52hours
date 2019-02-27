@@ -2,47 +2,85 @@
   <div>
     <v-card>
       <v-card-title primary-title>
-        <h3 class="title">전송 이력</h3>
+        <div>
+          <h3 class="title">근무 시간</h3>
+          <div>2주간의 근무시간</div>
+        </div>
         <v-spacer></v-spacer>
-        <v-btn flat :loading="progress" />
+        <div> {{ managername }} > {{ username }}</div>
         <v-spacer></v-spacer>
       </v-card-title>
       <v-card-text>
-        <v-layout row wrap>
-          <p class="caption">최근 4주간의 등록 이력 (<i>매니저 - 사용자</i> 기준으로 저장)</p>
+        <v-layout row wrap align-end justify-space-around>
+          <v-flex xs6 px-2 v-for="(week,key,i) in weeklyMinuteSum" :key="key">
+            <v-card v-if="i<2" :color="i==0 ? 'primary' : ''" :dark="i==0">
+              <v-responsive>
+                <div class="pa-1">{{ i == 0 ? 'This Week' : 'Lask Week'}}</div>
+              </v-responsive>
+              <v-card-title primary-title >
+                <div class="display-2 px-2">{{ String(Math.floor(week.totalMinute / 60)).padStart(2,0) }}h</div>
+                <div class="display-1 px-2">{{ String(week.totalMinute % 60).padStart(2,0) }}m</div>
+              </v-card-title>
+              <v-card-text>
+                  <v-layout row wrap>
+                    <v-flex xs12 sm6 class="text-xs-left text-sm-right">{{getDisplayDate(week.start)}} ~ </v-flex>
+                    <v-flex xs12 sm6 class="text-xs-left">{{getDisplayDate(week.end) || 'Today'}}</v-flex>
+                  </v-layout>
+                  <div></div>
+                  <div></div>
+              </v-card-text>
+            </v-card>
+          </v-flex>
+
+          
+          
         </v-layout>
-        <v-layout row wrap my-3>
-          <table>
-            <thead>
-              <tr>
-                <td class="py-3 text-xs-center grey lighten-5 grey--text"><b>일</b></td>
-                <td class="py-3 text-xs-center grey lighten-5"><b>월</b></td>
-                <td class="py-3 text-xs-center grey lighten-5"><b>화</b></td>
-                <td class="py-3 text-xs-center grey lighten-5"><b>수</b></td>
-                <td class="py-3 text-xs-center grey lighten-5"><b>목</b></td>
-                <td class="py-3 text-xs-center grey lighten-5"><b>금</b></td>
-                <td class="py-3 text-xs-center grey lighten-5 grey--text"><b>토</b></td>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(week, i) in weeks" :key="i">
-                <td v-for="(day, j) in week" :key="j" class="py-3 text-xs-center grey lighten-5" >
-                  <span v-if="day && day.type === 'SUBMITTED'" class="caption">
-                    {{getMMDD(day.date)}}
-                    <v-icon disabled>check_circle_outline</v-icon><br>
-                  </span>
-                  <span v-else-if="day && day.type === 'NODATA'"  class="caption add-date" @click="addNewDate(day.date)" >
-                    {{getMMDD(day.date)}}
-                    <v-icon color="primary">add_circle</v-icon><br>
-                  </span>
-                  <span v-else-if="day && day.type === 'WEEKEND'" class="caption">
-                    {{getMMDD(day.date)}}
-                    <v-icon disabled>remove</v-icon><br>
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+      </v-card-text>
+      <!-- <v-card-actions>
+        <v-btn flat color="primary">text</v-btn>
+        <v-btn flat color="primary">text</v-btn>
+      </v-card-actions> -->
+    </v-card>
+    <v-layout  mb-3>
+    </v-layout>
+    <v-card>
+      <v-card-title primary-title>
+        <h3 class="title">전송 이력</h3>
+        <v-spacer></v-spacer>
+        <v-btn flat :loading="progress" />
+        <v-btn flat @click="refresh" v-if="!progress" icon>
+          <v-icon>refresh</v-icon>
+        </v-btn>
+        <v-spacer></v-spacer>
+      </v-card-title>
+      <v-card-text class="pa-0">
+        <v-layout row wrap>
+          <!-- <p class="caption">최근 4주간의 등록 이력 (<i>매니저 - 사용자</i> 기준으로 저장)</p> -->
+        </v-layout>
+        <v-layout>
+          <v-flex>
+            <v-sheet height="300" v-if="calendarStart && calendarEnd" elevation="1">
+              <v-calendar
+                :start="calendarStart"
+                :end="calendarEnd"
+                :value="calendarEnd"
+                color="primary"
+                type="custom-weekly"
+              >
+                <template
+                  slot="day"
+                  slot-scope="{ date }"
+                >
+                  <history-day 
+                    v-on:addNewDate="addNewDate(date)"
+                    v-if="!progress && history && history.length" 
+                    :working-info="historyMap[date] || {}"
+                    
+                  ></history-day>
+                </template>
+              </v-calendar>
+            </v-sheet>
+          </v-flex>
         </v-layout>
         
       </v-card-text>
@@ -62,107 +100,94 @@
 
 <script>
 // import mapGetters from 'vuex'
+import HistoryDay from './HistoryDay.vue'
 
 export default {
   data () {
     return {
       today: new Date(),
-      // Date Class Array
-      dateList: [],
-      // For creating calendar
-      weeks: [
-        Array(7).fill(null),
-        Array(7).fill(null),
-        Array(7).fill(null),
-        Array(7).fill(null),
-      ],
+      calendarStart: '',
+      calendarEnd: '',
+
+      // date - history map
+      historyMap: {},
+
+      weeklyMinuteSum: {},
       // dialog
       dialog: false
     }
   },
   mounted () {
-    if (!this.username || !this.managername){
+    if (!localStorage.username || !localStorage.managername) {
       this.dialog = true
     }
-
-    this.setCalendar()
     this.$store.dispatch('loadHistory')
+
+    this.calendarStart = this.getDisplayDate(new Date(this.today.getTime() - (14 + this.today.getDay()) * 24 * 60 * 60 * 1000))
+    this.calendarEnd = this.getDisplayDate(this.today)
   },
-  
   computed: {
     username () {
       return this.$store.state.username
     },
     managername () {
-      return this.$store.state.managername
+      return this.$store.getters.managername
     },
     history () {
       return this.$store.getters.history
     },
+    userValid () {
+      return (!!this.username && !!this.managername) 
+          || (!localStorage.username || !localStorage.managername)
+    },
     progress () {
       return this.$store.state.historyProgress
+    },
+    page () {
+      return this.$route.path
     }
   },
   watch: {
+    page () {
+      console.log('page changed')
+    },
+    userValid () {
+      this.dialog = !this.userValid
+    },
     history () {
-      this.weeks = this.weeks.map(week => {
-        return week.map(day => {
-          if (day) {
-            return {
-              date: day.date,
-              type: this.getDateType(day.date)
-            }
-          } else {
-            return null
-          }
-        })
-      })
-    }
+      if (this.history.length) {
+        this.setHistory()
+
+        this.setWeeklyMinuteSum()
+      }
+    },
+    progress (progress) {
+      if (!progress && this.userValid) {
+        this.setHistory()
+      }
+    },
   },
   methods: {
-    setCalendar () {
-      this.today = new Date()
-      this.today.setHours(0,0,0)
-      this.dateList = Array.from(Array(28).keys())
-        .map(n=> new Date(this.today.getTime() - (n * 24 * 60 * 60 * 1000)))
-
-      let _dateList = this.dateList.copyWithin().reverse()
-      // calendar 의 시작을 일요일로 맞춤
-      while (_dateList[0].getDay() != 0) _dateList.shift()
-      
-      this.weeks = this.weeks.map((week) => {
-        return week.map((date, dayIndex) => {
-          if (_dateList[0] && _dateList[0].getDay() == dayIndex) {
-            let matchDay = _dateList.shift()
-            return {
-              date: matchDay,
-              type: this.getDateType(matchDay)
-            }
-          } else {
-            return null
-          }
-        })
-      })
+    refresh () {
+      this.weeklyMinuteSum = {}
+      this.$store.dispatch('loadHistory')
+    },
+    setHistory () {
+      if (this.history && this.history.length) {
+        Array.from(Array(21).keys())
+          .map(n=> new Date(this.today.getTime() - (n * 24 * 60 * 60 * 1000)))
+          .map(this.getDisplayDate) // yyyy-mm-dd
+          .forEach(y_m_d => {
+            const item = this.history.find(item => item.y_m_d === y_m_d)
+            this.historyMap[y_m_d] = item || { y_m_d: y_m_d, date: new Date(y_m_d) }
+          })
+      }
     },
     getDisplayDate(date) {
       return date ? `${date.getFullYear()}-${(date.getMonth()+1+'').padStart(2, '0')}-${(date.getDate()+'').padStart(2, '0')}` : ''
     },
-    getMMDD(date) {
-      return this.getDisplayDate(date).substr(5).replace('-', '/')
-    },
-    getDateType(date) {
-      if (!date) return 'NODATA'
-
-      if (/0|6/.test(date.getDay())) {
-        return 'WEEKEND'
-      } else if (this.history.indexOf(this.getDisplayDate(date)) > -1) {
-        return 'SUBMITTED'
-      } else {
-        return 'NODATA'
-      }
-    },
     addNewDate (date) {
-      this.$emit('add', this.getDisplayDate(date))
+      this.$emit('add', date)
 
       // window.scrollTo(0, '#app')
       // this.$vuetify.goTo('#newWorkingTime', {
@@ -170,17 +195,43 @@ export default {
       //   offset: 0,
       //   easing: 'easeInOutCubic'
       // })
-      this.$store.commit('newDateFromHistory', this.getDisplayDate(date))
+      this.$store.commit('newDateFromHistory', date)
       this.$router.push({path:'/'})
 
       // analytics
       this.$gtag && this.$gtag('event', 'click', {
         'event_category': 'history',
-        'event_label': this.getDisplayDate(date)
+        'event_label': date
       });
+      
+    },
+    setWeeklyMinuteSum () {
+      Object.values(this.historyMap)
+        .map( item => {
+          item.totalMinute = item.workingHour ? (item.workingHour * 60 + item.workingMinute) : 0
+          return item
+        })
+        .forEach( item => {
+          const year = item.date.getFullYear()
+          const onejan = new Date(year, 0, 1)
+          const weekOfYear = Math.ceil((((item.date - onejan) / 86400000) + onejan.getDay()) / 7)
+          const weekInfo = this.weeklyMinuteSum['w'+weekOfYear] || {}
+          const prevSum = weekInfo.totalMinute || 0
+
+          if (item.date.getDay() == 0) { // start of the week
+            weekInfo.start = item.date
+          } else if (item.date.getDay() == 6) {
+            weekInfo.end = item.date
+          }
+          weekInfo.totalMinute = prevSum + item.totalMinute
+
+          this.weeklyMinuteSum['w'+weekOfYear] = weekInfo
+        })
     }
   },
-    
+  components: {
+    HistoryDay
+  }
 }
 </script>
 

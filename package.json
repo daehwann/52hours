@@ -1,6 +1,6 @@
 {
   "name": "52hours",
-  "version": "0.5.7",
+  "version": "0.6.0",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -9,12 +9,14 @@
   },
   "dependencies": {
     "axios": "^0.18.0",
+    "jsonp": "^0.2.1",
+    "query-string": "^6.2.0",
     "register-service-worker": "^1.5.2",
     "standard": "^12.0.1",
     "vue": "^2.5.21",
     "vue-disqus": "^3.0.5",
     "vue-router": "^3.0.1",
-    "vuetify": "^1.4.0",
+    "vuetify": "^1.5.2",
     "vuex": "^3.0.1"
   },
   "devDependencies": {

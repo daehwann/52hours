@@ -42,7 +42,10 @@
           <v-icon left>date_range</v-icon><span>History</span>
         </v-tab>
         <v-tab to="/request">
-          <v-icon left>question_answer</v-icon><span>문의</span>
+          <v-badge color="red" v-model="badge">
+            <span slot="badge">!</span>
+            <v-icon left>question_answer</v-icon><span>문의</span>
+          </v-badge>
         </v-tab>
       </v-tabs>
       <!-- <v-toolbar-items>
@@ -65,6 +68,11 @@ export default {
     return {
       drawer: false
     }
-  }
+  },
+  computed: {
+    badge() {
+      return !!this.$store.state.content.badge
+    }
+  },
 }
 </script>
