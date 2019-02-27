@@ -1,10 +1,10 @@
 <template>
   <div>
     
-    <v-layout row wrap class="text-xs-center">
-      <v-flex xs1 class="text-xs-center">
+    <v-layout row wrap>
+      <v-flex xs12 class="text-xs-left text-sm-center">
         <div v-if="hours">{{ String(hours).padStart(2,0) }}h {{ String(minutes || 0).padStart(2,0) }}m</div>
-        <v-btn small v-if="!hours && y_m_d" flat icon color="primary" @click="$emit('addNewDate')">
+        <v-btn class="ma-0" small v-if="!hours && y_m_d" flat icon color="primary" @click="$emit('addNewDate')">
           <v-icon>add_circle</v-icon>
         </v-btn>  
       </v-flex>

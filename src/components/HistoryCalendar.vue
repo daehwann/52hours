@@ -6,11 +6,17 @@
           <h3 class="title">근무 시간</h3>
           <div>2주간의 근무시간</div>
         </div>
+        <v-spacer></v-spacer>
+        <div> {{ managername }} > {{ username }}</div>
+        <v-spacer></v-spacer>
       </v-card-title>
       <v-card-text>
         <v-layout row wrap align-end justify-space-around>
           <v-flex xs6 px-2 v-for="(week,key,i) in weeklyMinuteSum" :key="key">
             <v-card v-if="i<2" :color="i==0 ? 'primary' : ''" :dark="i==0">
+              <v-responsive>
+                <div class="pa-1">{{ i == 0 ? 'This Week' : 'Lask Week'}}</div>
+              </v-responsive>
               <v-card-title primary-title >
                 <div class="display-2 px-2">{{ String(Math.floor(week.totalMinute / 60)).padStart(2,0) }}h</div>
                 <div class="display-1 px-2">{{ String(week.totalMinute % 60).padStart(2,0) }}m</div>
@@ -47,13 +53,13 @@
         </v-btn>
         <v-spacer></v-spacer>
       </v-card-title>
-      <v-card-text>
+      <v-card-text class="pa-0">
         <v-layout row wrap>
           <!-- <p class="caption">최근 4주간의 등록 이력 (<i>매니저 - 사용자</i> 기준으로 저장)</p> -->
         </v-layout>
         <v-layout>
           <v-flex>
-            <v-sheet height="300" v-if="calendarStart && calendarEnd" elevation="3">
+            <v-sheet height="300" v-if="calendarStart && calendarEnd" elevation="1">
               <v-calendar
                 :start="calendarStart"
                 :end="calendarEnd"
